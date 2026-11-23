@@ -29,9 +29,11 @@ import {
   checkMediaUnlock,
   checkMediaUnlockItem,
   getUnlockItems,
-  type UnlockItem,
+  type UnlockItem as BaseUnlockItem,
 } from '@/services/cmds'
 import { showNotice } from '@/services/notice-service'
+
+type UnlockItem = BaseUnlockItem & { exit_ip?: string | null; exit_ip_source?: string | null }
 
 const UNLOCK_RESULTS_STORAGE_KEY = 'clash_verge_unlock_results'
 
@@ -384,6 +386,9 @@ const UnlockPage = () => {
                 />
 
                 <Box sx={{ px: 1.5, py: 0.2 }}>
+                  <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', overflowWrap: 'anywhere' }}>
+                    出口 IP：{item.exit_ip || '未获取'}{item.exit_ip_source ? ` · ${item.exit_ip_source}` : ''}
+                  </Typography>
                   <Typography
                     variant="caption"
                     sx={{

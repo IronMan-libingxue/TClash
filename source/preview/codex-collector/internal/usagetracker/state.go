@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -17,6 +18,7 @@ import (
 	"unicode"
 
 	"github.com/yetone/magpie/internal/davsync"
+	"github.com/yetone/magpie/internal/sessions"
 	"github.com/yetone/magpie/internal/steady"
 
 	"filippo.io/age"
@@ -37,13 +39,17 @@ type config struct {
 	Signer                ed25519.PrivateKey    `json:"signer,omitempty"`
 	Pair                  Pair                  `json:"pair,omitempty"`
 	Devices               map[string]Device     `json:"devices,omitempty"`
+	DeviceAliases         map[string]string     `json:"deviceAliases,omitempty"`
 	Policy                Policy                `json:"policy"`
 	Published             int64                 `json:"published,omitempty"`
+	PriceRevision         int64                 `json:"priceRevision,omitempty"`
+	PriceDigest           string                `json:"priceDigest,omitempty"`
 	Uploaded              map[string]string     `json:"uploaded,omitempty"`
 	Quotas                []Quota               `json:"quotas,omitempty"`
 	LastSync              time.Time             `json:"lastSync,omitempty"`
 	Invites               map[string]invitation `json:"invites,omitempty"`
 	Invite                []byte                `json:"invite,omitempty"`
+	CountSince            time.Time             `json:"countSince,omitempty"`
 	DeploymentDir         string                `json:"deploymentDir,omitempty"`
 	DeploymentTokenHashes map[string]string     `json:"deploymentTokenHashes,omitempty"`
 	SimulationRoot        string                `json:"simulationRoot,omitempty"`
@@ -67,6 +73,14 @@ type App struct {
 	status            string
 	speed             speedReading
 	observationOpen   bool
+	controller        controllerState
+	pricing           controllerPricing
+	pricingJob        sync.Mutex
+	priceSyncError    string
+
+	telemetryMu sync.Mutex
+	telemetry   Telemetry
+	traffic     *trafficLedger
 
 	work            sync.Mutex
 	collect         func(context.Context, string, string, []Quota, []AccountCorrection) ([]Day, error)
@@ -75,6 +89,8 @@ type App struct {
 	installerAssets string
 	account         func() string
 	measureSpeed    func() speedReading
+	activitySources activitySourceFn
+	localTelemetry  func() *Telemetry
 }
 
 func New(dataDir, role string) (*App, error) {
@@ -90,17 +106,28 @@ func New(dataDir, role string) (*App, error) {
 		return nil, err
 	}
 	c := &Collector{}
-	app := &App{dir: dir, cfg: cfg, collect: c.Days, quota: ReadOfficial, account: currentAccount, measureSpeed: localSpeed,
+	app := &App{dir: dir, cfg: cfg, collect: c.Days, quota: ReadOfficial, account: currentAccount, measureSpeed: localSpeed, activitySources: sessions.CallSourcesAndCodexIdentities,
 		openRepo: func(ctx context.Context, repo, token string) (transport, error) {
 			return davsync.OpenUsageRepository(ctx, repo, token)
 		}}
+	app.traffic = newTrafficLedger(dir)
+	if root, rootErr := os.UserConfigDir(); rootErr == nil && dir == filepath.Join(root, "Codex Usage Tracker") {
+		app.localTelemetry = readLocalTelemetry
+	}
 	if role != "" {
 		if err := app.setRole(role); err != nil {
 			return nil, err
 		}
 	}
+	if app.cfg.Role != "b" {
+		app.pricing = loadPricing(dir)
+	}
 	if app.cfg.Role == "a" {
+		app.loadControllerState()
 		app.remote = app.cachedDays(app.cfg)
+		priceRequests(app.remote, app.pricing, true)
+	} else if app.cfg.Role == "b" {
+		app.pricing, _ = readPublishedPricing(dir, app.cfg.Pair.Verifier)
 	}
 	return app, nil
 }
@@ -206,6 +233,32 @@ func label(value string) string {
 	return out.String()
 }
 
+func (a *App) renameDevice(id, name string) error {
+	cfg := a.config()
+	if cfg.Role != "a" {
+		return errors.New("只有 A 端可以修改设备名称")
+	}
+	if id != "local" {
+		if _, ok := cfg.Devices[id]; !ok {
+			return errors.New("未找到已接入的设备")
+		}
+	}
+	name = strings.TrimSpace(name)
+	if label(name) != name {
+		return errors.New("设备名称过长或包含无效字符")
+	}
+	cfg.DeviceAliases = maps.Clone(cfg.DeviceAliases)
+	if cfg.DeviceAliases == nil {
+		cfg.DeviceAliases = map[string]string{}
+	}
+	if name == "" {
+		delete(cfg.DeviceAliases, id)
+	} else {
+		cfg.DeviceAliases[id] = name
+	}
+	return a.save(cfg)
+}
+
 func (c config) device() Device {
 	public := c.Signer.Public().(ed25519.PublicKey)
 	return Device{ID: digest("device", string(public)), Name: c.Name, Verifier: public}
@@ -252,6 +305,20 @@ func (a *App) refreshLocal(ctx context.Context, cfg config) error {
 	if err != nil {
 		return err
 	}
+	if cfg.Role == "b" && !cfg.CountSince.IsZero() {
+		for i := range days {
+			days[i].CountSince = cfg.CountSince
+			days[i].Rows = slices.DeleteFunc(days[i].Rows, func(row Request) bool {
+				return row.At.Before(cfg.CountSince)
+			})
+			days[i].Quotas = slices.DeleteFunc(days[i].Quotas, func(quota Quota) bool {
+				return quota.At.Before(cfg.CountSince)
+			})
+		}
+		days = slices.DeleteFunc(days, func(day Day) bool {
+			return len(day.Rows) == 0 && len(day.Quotas) == 0 && day.Telemetry == nil
+		})
+	}
 	after := a.account()
 	if cfg.Role == "a" {
 		cfg, err = a.observeAccount(cfg, after, time.Now().UTC())
@@ -259,8 +326,21 @@ func (a *App) refreshLocal(ctx context.Context, cfg config) error {
 			return err
 		}
 		classifyLocal(days, cfg)
+		a.pricingJob.Lock()
+		defer a.pricingJob.Unlock()
 	}
 	a.mu.Lock()
+	if cfg.Role == "a" {
+		priceRequests(days, a.pricing, false)
+	} else if a.pricing.published > 0 {
+		priceRequests(days, a.pricing, true)
+	} else if !cfg.LastSync.IsZero() || len(cfg.Pair.Verifier) > 0 {
+		for _, day := range days {
+			for i := range day.Rows {
+				day.Rows[i].USD, day.Rows[i].Priced = 0, false
+			}
+		}
+	}
 	a.local, a.readAt = days, time.Now()
 	a.localAccount = after
 	a.mu.Unlock()
@@ -294,6 +374,10 @@ func (a *App) observeAccount(cfg config, account string, at time.Time) (config, 
 
 func (a *App) Start(ctx context.Context) {
 	go a.sampleSpeed(ctx)
+	go a.sampleActivity(ctx)
+	if a.config().Role != "b" {
+		go a.runPriceChecks(ctx)
+	}
 	go func() {
 		start := time.Now()
 		timer := time.NewTicker(time.Minute)
@@ -314,6 +398,7 @@ func (a *App) Start(ctx context.Context) {
 // while never opening a repository or uploading a second copy of its logs.
 func (a *App) StartLocalOnly(ctx context.Context, reason string) {
 	go a.sampleSpeed(ctx)
+	go a.sampleActivity(ctx)
 	go func() {
 		refresh := func() {
 			if !a.work.TryLock() {

@@ -48,8 +48,12 @@ func TestDeploymentEnrollmentAndCollectorSchedule(t *testing.T) {
 	for _, name := range []string{macTemplate, windowsAMD64, windowsARM64, magpieLicense} {
 		check(os.WriteFile(filepath.Join(assets, name), []byte(name), 0600))
 	}
-	check(a.exportDeployments(ctx, []string{"fixture-2", "fixture-3", "fixture-4", "fixture-win1", "fixture-win2"}))
-	if v := a.view(nil); len(v.Cards) != 6 || len(v.Paired) != 0 || v.SyncMinutes != 5 {
+	tokens := make([]string, len(deploymentDevices))
+	for i, target := range deploymentDevices {
+		tokens[i] = "fixture-" + strings.ReplaceAll(target.Name, " ", "-")
+	}
+	check(a.exportDeployments(ctx, tokens))
+	if v := a.view(nil); len(v.Cards) != 1+len(deploymentDevices) || len(v.Paired) != 0 || v.SyncMinutes != 5 {
 		t.Fatalf("wrong initial deployment overview: %d cards, %d paired, %d minutes", len(v.Cards), len(v.Paired), v.SyncMinutes)
 	}
 	install := func(name string) *App {
@@ -65,6 +69,9 @@ func TestDeploymentEnrollmentAndCollectorSchedule(t *testing.T) {
 		path := filepath.Join(t.TempDir(), "enrollment.json")
 		check(os.WriteFile(path, body, 0600))
 		check(b.InstallDeployment(path))
+		bcfg := b.config()
+		bcfg.CountSince = now.Add(-time.Second)
+		check(b.save(bcfg))
 		return b
 	}
 	var bs []*App
@@ -75,8 +82,8 @@ func TestDeploymentEnrollmentAndCollectorSchedule(t *testing.T) {
 	}
 	check(a.syncNow(ctx, a.config()))
 	first := a.view(nil)
-	if len(first.Paired) != 5 || first.Count != 6 || first.Total.total(true) != 6*23 || first.Quota.Used != 36 {
-		t.Fatal("A did not automatically register and aggregate five independent B devices and its own usage")
+	if len(first.Paired) != len(deploymentDevices) || first.Count != 1+len(deploymentDevices) || first.Total.total(true) != int64(1+len(deploymentDevices))*23 || first.Quota.Used != 36 {
+		t.Fatal("A did not automatically register and aggregate the independent B devices and its own usage")
 	}
 	for _, card := range first.Cards {
 		if card.Pending || card.Total.total(true) != 23 || len(card.Models) != 1 || card.Models[0].total(true) != 23 {
@@ -110,7 +117,7 @@ func TestDeploymentEnrollmentAndCollectorSchedule(t *testing.T) {
 	replayed := install(deploymentDevices[0].Name)
 	check(replayed.runCollector(ctx, replayed.config(), true, now))
 	check(a.syncNow(ctx, a.config()))
-	if v := a.view(url.Values{"cache": {"0"}}); len(v.Paired) != 5 || v.Total.total(false) != 6*11 || v.Count != 6 {
+	if v := a.view(url.Values{"cache": {"0"}}); len(v.Paired) != len(deploymentDevices) || v.Total.total(false) != int64(1+len(deploymentDevices))*11 || v.Count != 1+len(deploymentDevices) {
 		t.Fatal("an already consumed invitation enrolled a second identity")
 	}
 }

@@ -11,6 +11,7 @@ pub mod ipc;
 mod process;
 mod tclash_collector;
 mod tclash_format;
+mod tclash_note;
 pub mod utils;
 
 use crate::constants::files;
@@ -228,6 +229,8 @@ pub fn run() -> std::process::ExitCode {
             if let Err(panic) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 resolve::resolve_setup_async();
                 resolve::resolve_setup_sync();
+                AsyncHandler::spawn(|| async { crate::tclash_collector::monitor_traffic().await });
+                crate::tclash_note::start();
                 #[cfg(target_os = "linux")]
                 resolve::init_signal();
             })) {

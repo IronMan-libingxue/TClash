@@ -868,7 +868,7 @@ func syncLock(ctx context.Context, onlyIfMissing bool) error {
 		return err
 	}
 	var probe map[string]mdProvider
-	if err := json.Unmarshal(b, &probe); err != nil || len(probe) == 0 {
+	if err := json.Unmarshal(b, &probe); err != nil || !hasCatalogPrices(probe) {
 		return fmt.Errorf("models.dev: unexpected payload")
 	}
 	// written whole through a rename: a reader never sees it half
@@ -882,6 +882,17 @@ func syncLock(ctx context.Context, onlyIfMissing bool) error {
 	Reset()
 	Touched() // names, reasoning levels and context windows may be others
 	return nil
+}
+
+func hasCatalogPrices(providers map[string]mdProvider) bool {
+	for _, provider := range providers {
+		for _, model := range provider.Models {
+			if model.ID != "" && model.Cost != nil {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // Stale reports whether no catalog exists or the cache is older than a day
@@ -2253,6 +2264,29 @@ func Providers() []string {
 		ids = append(ids, id)
 	}
 	sort.Strings(ids)
+	return ids
+}
+
+// PriceModelIDs lists public model identifiers for a portable price snapshot.
+func PriceModelIDs() []string {
+	seen := map[string]bool{}
+	for _, provider := range load() {
+		for id, model := range provider.Models {
+			if model.Cost != nil {
+				seen[bareID(id)] = true
+				if model.Canonical != "" {
+					seen[bareID(model.Canonical)] = true
+				}
+			}
+		}
+	}
+	ids := make([]string, 0, len(seen))
+	for id := range seen {
+		if id != "" {
+			ids = append(ids, id)
+		}
+	}
+	slices.Sort(ids)
 	return ids
 }
 

@@ -12,6 +12,7 @@ struct Collector {
 }
 
 static COLLECTOR: OnceLock<Mutex<Option<Collector>>> = OnceLock::new();
+static VIEW_FILTER: OnceLock<Mutex<(String, bool)>> = OnceLock::new();
 
 fn executable() -> anyhow::Result<PathBuf> {
     let name = format!("tclash-collector{}", std::env::consts::EXE_SUFFIX);
@@ -64,11 +65,26 @@ pub fn view(window: &str, cache: bool) -> anyhow::Result<String> {
     if window.len() > 256 {
         anyhow::bail!("invalid period");
     }
+    send_request(serde_json::json!({ "window": window, "cache": cache }))
+}
+
+pub fn set_view_filter(window: &str, cache: bool) {
+    if let Ok(mut filter) = VIEW_FILTER.get_or_init(|| Mutex::new((String::new(), true))).lock() {
+        *filter = (window.to_string(), cache);
+    }
+}
+
+pub fn current_view() -> anyhow::Result<String> {
+    let filter = VIEW_FILTER.get_or_init(|| Mutex::new((String::new(), true))).lock()
+        .map_err(|e| anyhow::anyhow!(e.to_string()))?.clone();
+    view(&filter.0, filter.1)
+}
+
+fn send_request(request: serde_json::Value) -> anyhow::Result<String> {
     start()?;
     let mut guard = COLLECTOR.get().ok_or_else(|| anyhow::anyhow!("collector unavailable"))?
         .lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
     let collector = guard.as_mut().ok_or_else(|| anyhow::anyhow!("collector unavailable"))?;
-    let request = serde_json::json!({ "window": window, "cache": cache });
     let result = (|| -> anyhow::Result<String> {
         writeln!(collector.input, "{request}")?;
         collector.input.flush()?;
@@ -86,6 +102,39 @@ pub fn view(window: &str, cache: bool) -> anyhow::Result<String> {
         }
     }
     result
+}
+
+pub async fn monitor_traffic() {
+    use crate::core::handle;
+    use std::time::Duration;
+
+    loop {
+        if handle::Handle::global().is_exiting() { break; }
+        let mihomo = handle::Handle::mihomo();
+        let profile = crate::config::Config::profiles().await.data_arc().current.clone();
+        let runtime = crate::config::Config::runtime().await.latest_arc();
+        let groups = runtime.config.as_ref().map(|config| {
+            config.get("proxy-groups").and_then(|value| value.as_sequence()).map(|items| {
+                items.iter().filter_map(|item| item.get("name")).filter_map(|name| name.as_str())
+                    .map(str::to_owned).collect::<std::collections::HashSet<_>>()
+            }).unwrap_or_default()
+        });
+        if let (Some(groups), Ok(connections)) = (groups, mihomo.get_connections().await) {
+            let all_groups: Vec<_> = groups.iter().cloned().collect();
+            let items: Vec<_> = connections.connections.unwrap_or_default().into_iter().filter_map(|item| {
+                chrono::DateTime::parse_from_rfc3339(&item.start).ok()?;
+                let selected: Vec<_> = item.chains.into_iter().filter(|name| groups.contains(name)).collect();
+                Some(serde_json::json!({
+                    "id": item.id, "start": item.start,
+                    "upload": item.upload.min(i64::MAX as u64), "download": item.download.min(i64::MAX as u64),
+                    "groups": selected
+                }))
+            }).collect();
+            let request = serde_json::json!({"operation": "traffic", "traffic": {"at": chrono::Utc::now().to_rfc3339(), "profile": profile, "groups": all_groups, "connections": items}});
+            let _ = tauri::async_runtime::spawn_blocking(move || send_request(request)).await;
+        }
+        tokio::time::sleep(Duration::from_secs(3)).await;
+    }
 }
 
 pub fn stop() {

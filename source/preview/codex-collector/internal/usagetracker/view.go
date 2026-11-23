@@ -22,6 +22,8 @@ type viewedRequest struct {
 	DeviceName   string `json:"deviceName"`
 	Simulated    bool   `json:"simulated,omitempty"`
 	OtherAccount bool   `json:"otherAccount,omitempty"`
+	ActualTier   bool   `json:"actualTier,omitempty"`
+	PriceReason  string `json:"priceReason,omitempty"`
 }
 
 type windowChoice struct {
@@ -32,55 +34,85 @@ type windowChoice struct {
 
 type deviceCard struct {
 	choice
-	Total     Total     `json:"total"`
-	Models    []Group   `json:"models,omitempty"`
-	Updated   time.Time `json:"updated"`
-	Pending   bool      `json:"pending,omitempty"`
-	Simulated bool      `json:"simulated,omitempty"`
+	Total         Total          `json:"total"`
+	Unassigned    Total          `json:"unassigned"`
+	OtherAccount  Total          `json:"otherAccount"`
+	Models        []Group        `json:"models,omitempty"`
+	Updated       time.Time      `json:"updated"`
+	CountSince    time.Time      `json:"countSince,omitempty"`
+	Pending       bool           `json:"pending,omitempty"`
+	Simulated     bool           `json:"simulated,omitempty"`
+	Telemetry     *Telemetry     `json:"telemetry,omitempty"`
+	ActivityStats *ActivityStats `json:"activityStats,omitempty"`
+	FastTotal     Total          `json:"fastTotal"`
+	FastModels    []Group        `json:"fastModels,omitempty"`
+	FastSessions  []Group        `json:"fastSessions,omitempty"`
+	TierUnknown   int            `json:"tierUnknown,omitempty"`
+	Scaled        bool           `json:"scaled,omitempty"`
+	DisplayFactor float64        `json:"displayFactor,omitempty"`
+	ActivityLevel string         `json:"activityLevel,omitempty"`
 }
 
 type view struct {
-	Speed               speedReading `json:"speed"`
-	Role                string       `json:"role"`
-	Name                string       `json:"name"`
-	Repo                string       `json:"repo,omitempty"`
-	ReadAt              time.Time    `json:"readAt"`
-	LastSync            time.Time    `json:"lastSync"`
-	Status              string       `json:"status,omitempty"`
-	SyncMinutes         int          `json:"syncMinutes,omitempty"`
-	DeploymentDir       string       `json:"deploymentDir,omitempty"`
-	Deployments         []string     `json:"deployments,omitempty"`
-	Cards               []deviceCard `json:"cards,omitempty"`
-	SimulationAvailable bool         `json:"simulationAvailable,omitempty"`
-	SimulationEnabled   bool         `json:"simulationEnabled,omitempty"`
-	SimulationStatus    string       `json:"simulationStatus,omitempty"`
-	SimulatedDevice     bool         `json:"simulatedDevice,omitempty"`
+	Speed               speedReading   `json:"speed"`
+	Role                string         `json:"role"`
+	Name                string         `json:"name"`
+	Repo                string         `json:"repo,omitempty"`
+	ReadAt              time.Time      `json:"readAt"`
+	LastSync            time.Time      `json:"lastSync"`
+	CountSince          time.Time      `json:"countSince,omitempty"`
+	Status              string         `json:"status,omitempty"`
+	SyncMinutes         int            `json:"syncMinutes,omitempty"`
+	DeploymentDir       string         `json:"deploymentDir,omitempty"`
+	Deployments         []string       `json:"deployments,omitempty"`
+	Cards               []deviceCard   `json:"cards,omitempty"`
+	SimulationAvailable bool           `json:"simulationAvailable,omitempty"`
+	SimulationEnabled   bool           `json:"simulationEnabled,omitempty"`
+	SimulationStatus    string         `json:"simulationStatus,omitempty"`
+	SimulatedDevice     bool           `json:"simulatedDevice,omitempty"`
+	Telemetry           *Telemetry     `json:"telemetry,omitempty"`
+	ActivityStats       *ActivityStats `json:"activityStats,omitempty"`
+	Pricing             *pricingStatus `json:"pricing,omitempty"`
+	NoticePermission    string         `json:"noticePermission,omitempty"`
+	NoticesEnabled      bool           `json:"noticesEnabled,omitempty"`
 
-	Devices            []choice       `json:"devices,omitempty"`
-	Paired             []choice       `json:"paired,omitempty"`
-	Accounts           []choice       `json:"accounts,omitempty"`
-	AccountTargets     []choice       `json:"accountTargets,omitempty"`
-	Account            string         `json:"account,omitempty"`
-	AccountUnavailable bool           `json:"accountUnavailable,omitempty"`
-	UnassignedCount    int            `json:"unassignedCount,omitempty"`
-	Windows            []windowChoice `json:"windows,omitempty"`
-	Quota              *Quota         `json:"quota,omitempty"`
-	Official           *Quota         `json:"official,omitempty"`
-	Window             string         `json:"window,omitempty"`
-	Device             string         `json:"device,omitempty"`
-	Cache              bool           `json:"cache"`
-	Rule               *PeriodRule    `json:"rule,omitempty"`
+	Devices            []choice          `json:"devices,omitempty"`
+	Paired             []choice          `json:"paired,omitempty"`
+	DeviceTargets      []choice          `json:"deviceTargets,omitempty"`
+	DeviceAliases      map[string]string `json:"deviceAliases,omitempty"`
+	Accounts           []choice          `json:"accounts,omitempty"`
+	AccountTargets     []choice          `json:"accountTargets,omitempty"`
+	Account            string            `json:"account,omitempty"`
+	AccountUnavailable bool              `json:"accountUnavailable,omitempty"`
+	UnassignedCount    int               `json:"unassignedCount,omitempty"`
+	Windows            []windowChoice    `json:"windows,omitempty"`
+	Quota              *Quota            `json:"quota,omitempty"`
+	Official           *Quota            `json:"official,omitempty"`
+	Window             string            `json:"window,omitempty"`
+	Device             string            `json:"device,omitempty"`
+	Cache              bool              `json:"cache"`
+	Rule               *PeriodRule       `json:"rule,omitempty"`
+	CurrentRule        *PeriodRule       `json:"currentRule,omitempty"`
+	ScaledDevices      map[string]bool   `json:"scaledDevices,omitempty"`
+	Scaled             bool              `json:"scaled,omitempty"`
+	DisplayFactor      float64           `json:"displayFactor,omitempty"`
+	SessionQuota       *Quota            `json:"sessionQuota,omitempty"`
+	SessionRule        *PeriodRule       `json:"sessionRule,omitempty"`
+	SessionEfforts     []Group           `json:"sessionEfforts,omitempty"`
 
-	Total           *Total          `json:"total,omitempty"`
-	Projects        []Group         `json:"projects,omitempty"`
-	Models          []Group         `json:"models,omitempty"`
-	Efforts         []Group         `json:"efforts,omitempty"`
-	Sessions        []Group         `json:"sessions,omitempty"`
-	Rows            []viewedRequest `json:"rows,omitempty"`
-	Count           int             `json:"count"`
-	Page            int             `json:"page"`
-	DisplayProjects []DisplayGroup  `json:"displayProjects,omitempty"`
-	DisplayModels   []DisplayGroup  `json:"displayModels,omitempty"`
+	Total            *Total          `json:"total,omitempty"`
+	DeviceTotal      *Total          `json:"deviceTotal,omitempty"`
+	DeviceUnassigned *Total          `json:"deviceUnassigned,omitempty"`
+	Projects         []Group         `json:"projects,omitempty"`
+	Models           []Group         `json:"models,omitempty"`
+	Efforts          []Group         `json:"efforts,omitempty"`
+	Sessions         []Group         `json:"sessions,omitempty"`
+	Rows             []viewedRequest `json:"rows,omitempty"`
+	Count            int             `json:"count"`
+	Page             int             `json:"page"`
+	DisplayProjects  []DisplayGroup  `json:"displayProjects,omitempty"`
+	DisplayModels    []DisplayGroup  `json:"displayModels,omitempty"`
+	DisplayTotal     *DisplayGroup   `json:"displayTotal,omitempty"`
 }
 
 func (a *App) view(q url.Values) view {
@@ -88,6 +120,7 @@ func (a *App) view(q url.Values) view {
 	cfg, local, remote, readAt, status, localAccount := a.cfg, a.local, a.remote, a.readAt, a.status, a.localAccount
 	simulated, simulationDevices, simulationStatus := a.simulated, a.simulationDevices, a.simulationStatus
 	speed := a.speed
+	pricing, priceSyncError := a.pricing, a.priceSyncError
 	a.mu.RUnlock()
 	v := view{Speed: speed, Role: cfg.Role, Name: cfg.Name, Repo: cfg.Repo, ReadAt: readAt, LastSync: cfg.LastSync,
 		Status: status, Cache: q.Get("cache") != "0"}
@@ -97,14 +130,29 @@ func (a *App) view(q url.Values) view {
 	days := local
 	cards := map[string]*deviceCard{}
 	cardModels := map[string]map[string]*Group{}
+	cardFastModels := map[string]map[string]*Group{}
+	cardFastSessions := map[string]map[string]*Group{}
 	simulatedIDs := map[string]bool{}
 	if cfg.Role == "a" {
+		prefs, status := a.controllerSettings()
+		v.ScaledDevices, v.NoticesEnabled, v.NoticePermission = prefs.Scaled, !prefs.Muted, status
+		price := pricing.status(slices.Concat(local, remote), time.Now())
+		price.Publication, price.PublicationError = cfg.PriceRevision, priceSyncError
+		v.Pricing = &price
 		v.SyncMinutes = int(cfg.Policy.interval() / time.Minute)
+		v.DeviceAliases = cfg.DeviceAliases
+		for _, target := range deploymentDevices {
+			v.DeviceTargets = append(v.DeviceTargets, choice{target.Name, target.Name})
+		}
 		v.DeploymentDir = cfg.DeploymentDir
 		if cfg.DeploymentDir != "" {
 			for _, target := range deploymentDevices {
 				if info, err := os.Stat(filepath.Join(cfg.DeploymentDir, target.Name+".zip")); err == nil && info.Mode().IsRegular() {
 					v.Deployments = append(v.Deployments, target.Name)
+				} else if info, err := os.Stat(filepath.Join(cfg.DeploymentDir, target.Name+" TClash.exe")); err == nil && info.Mode().IsRegular() {
+					v.Deployments = append(v.Deployments, target.Name+" TClash")
+				} else if info, err := os.Stat(filepath.Join(cfg.DeploymentDir, target.Name+" TClash 安装.app")); err == nil && info.IsDir() {
+					v.Deployments = append(v.Deployments, target.Name+" TClash")
 				} else if info, err := os.Stat(filepath.Join(cfg.DeploymentDir, target.Name+" TClash.zip")); err == nil && info.Mode().IsRegular() {
 					v.Deployments = append(v.Deployments, target.Name+" TClash")
 				}
@@ -116,7 +164,7 @@ func (a *App) view(q url.Values) view {
 		v.SimulationAvailable = cfg.SimulationRoot != ""
 		v.SimulationEnabled = cfg.ShowSimulation
 		v.SimulationStatus = simulationStatus
-		localDevice := choice{"local", "Mac 1（本机）"}
+		localDevice := choice{"local", deviceDisplayName("local", "Mac 1", cfg.DeviceAliases)}
 		v.Devices = []choice{{"all", "全部设备"}, localDevice}
 		realNames := map[string]bool{}
 		for _, d := range cfg.Devices {
@@ -124,7 +172,9 @@ func (a *App) view(q url.Values) view {
 			realNames[d.Name] = true
 		}
 		slices.SortFunc(v.Paired, compareChoices)
-		v.Devices = append(v.Devices, v.Paired...)
+		for _, item := range v.Paired {
+			v.Devices = append(v.Devices, choice{item.ID, deviceDisplayName(item.ID, item.Name, cfg.DeviceAliases)})
+		}
 		if cfg.ShowSimulation {
 			for _, d := range simulationDevices {
 				if realNames[d.Name] {
@@ -148,6 +198,8 @@ func (a *App) view(q url.Values) view {
 				}
 				cards[item.ID] = card
 				cardModels[item.ID] = map[string]*Group{}
+				cardFastModels[item.ID] = map[string]*Group{}
+				cardFastSessions[item.ID] = map[string]*Group{}
 			}
 			pendingNames := map[string]bool{}
 			for id, invite := range cfg.Invites {
@@ -168,6 +220,7 @@ func (a *App) view(q url.Values) view {
 		}
 	} else {
 		v.Device = cfg.device().ID
+		v.CountSince = cfg.CountSince
 	}
 	now := time.Now()
 	windows := periods(days)
@@ -231,7 +284,17 @@ func (a *App) view(q url.Values) view {
 		}
 	}
 	v.Window = q.Get("window")
-	var auto *Quota
+	// Entering a device's full detail should keep the same selected period,
+	// even if that period originally belonged to a non-current account.
+	if cfg.Role == "a" && v.Account == "all" && v.Window != "" && v.Window != "all" {
+		for _, w := range windows {
+			if w.id() == v.Window {
+				selectedAccount = w.Account
+				break
+			}
+		}
+	}
+	var auto, active *Quota
 	for _, w := range windows {
 		if cfg.Role == "a" && (selectedAccount == "" || w.Account != selectedAccount) {
 			continue
@@ -247,6 +310,10 @@ func (a *App) view(q url.Values) view {
 		if v.Window == w.id() {
 			selected := w
 			v.Quota = &selected
+		}
+		if cfg.Role == "a" && w.includes(now) && (active == nil || w.End.After(active.End)) {
+			selected := w
+			active = &selected
 		}
 		if (w.includes(now) || (cfg.Role == "a" && v.Account != "current" && v.Account != "unassigned" && v.Account != "all")) && (auto == nil ||
 			(w.Account == localAccount && auto.Account != localAccount) ||
@@ -278,6 +345,20 @@ func (a *App) view(q url.Values) view {
 	}
 	if cfg.Role == "a" {
 		v.Rule = &rule
+		if active != nil {
+			currentRule := cfg.Policy.rule(*active)
+			currentRule.End, currentRule.Account = active.End, active.Account
+			v.CurrentRule = &currentRule
+		}
+		if _, paired := cfg.Devices[v.Device]; paired && v.ScaledDevices[v.Device] {
+			v.Scaled, v.DisplayFactor = true, rule.factor(v.Device)
+		}
+		// A session belongs to a single account/device scope and is always
+		// summarised against its current verified period, even from a
+		// historical or model-filtered request list.
+		if active != nil && q.Get("session") != "" {
+			v.SessionQuota, v.SessionRule = active, v.CurrentRule
+		}
 		if cfg.ShowSimulation {
 			for _, day := range simulated {
 				if simulatedIDs[day.Device] {
@@ -286,9 +367,34 @@ func (a *App) view(q url.Values) view {
 			}
 		}
 	}
-	var total Total
+	var localActivity *Activity
+	if cfg.Role == "b" {
+		localTelemetry := a.telemetrySnapshot()
+		if localTelemetry.Version > 0 {
+			v.Telemetry = &localTelemetry
+			v.ActivityStats = activityStats(localTelemetry.Activity, v.Quota)
+			localActivity = localTelemetry.Activity
+		}
+	} else {
+		var shared *Telemetry
+		if a.localTelemetry != nil {
+			shared = a.localTelemetry()
+		}
+		own := a.telemetrySnapshot()
+		combined := mergeTelemetry(&own, shared)
+		if activityFresh(own.Activity, now) && (own.Activity.Active > 0 || !own.Activity.Uncertain) {
+			combined.Activity = own.Activity
+		}
+		localActivity = combined.Activity
+		if card := cards["local"]; card != nil && combined.Version > 0 {
+			card.Telemetry = combined
+		}
+	}
+	v.Speed = visibleSpeed(speed, localActivity, now)
+	var total, deviceTotal, deviceUnassigned Total
 	projects, models, sessions := map[string]*Group{}, map[string]*Group{}, map[string]*Group{}
 	efforts := map[string]*Group{}
+	sessionEfforts := map[string]*Group{}
 	project, model, session := q.Get("project"), q.Get("model"), q.Get("session")
 	add := func(m map[string]*Group, id, name string, row Request, factor float64) {
 		g := m[id]
@@ -296,49 +402,112 @@ func (a *App) view(q url.Values) view {
 			g = &Group{ID: id, Name: name}
 			m[id] = g
 		}
+		if row.At.After(g.LastAt) {
+			g.LastAt = row.At
+		}
 		g.Total.add(row, v.Quota, factor)
+	}
+	addFastSession := func(device string, row Request, factor float64) {
+		id := row.FastOwner
+		name := "归属未知"
+		if id == "" {
+			id = "unknown"
+		} else {
+			name = "主会话 " + id[:min(10, len(id))]
+		}
+		add(cardFastSessions[device], id, name, row, factor)
+	}
+	accountMatches := func(r Request, simulated bool) bool {
+		if simulated {
+			return v.Account != "unassigned" && v.Device != "all"
+		}
+		switch v.Account {
+		case "unassigned":
+			return r.Account == ""
+		case "all":
+			return true
+		default:
+			return selectedAccount != "" && r.Account == selectedAccount
+		}
+	}
+	addEffort := func(groups map[string]*Group, r Request) {
+		mode := modeOf(r.Tier)
+		add(groups, r.Effort+"/"+mode, effortName(r.Effort)+" · "+modeName(mode), r, 1)
 	}
 	var matching []viewedRequest
 	for _, day := range days {
 		if v.Device != "all" && v.Device != day.Device {
 			continue
 		}
-		factor := rule.factor(day.Device)
+		// The A display factor is applied after aggregating the raw data.
+		factor := 1.0
+		if cfg.Role == "b" {
+			factor = rule.factor(day.Device)
+		}
 		isSimulated := simulatedIDs[day.Device]
 		card := cards[day.Device]
+		if card != nil && day.Telemetry != nil {
+			card.Telemetry = mergeTelemetry(card.Telemetry, day.Telemetry)
+		}
 		if card != nil && day.At.After(card.Updated) {
 			card.Updated = day.At
 		}
+		if card != nil && day.CountSince.After(card.CountSince) {
+			card.CountSince = day.CountSince
+		}
 		for _, r := range day.Rows {
-			if v.Quota != nil && (!v.Quota.includes(r.At) || (cfg.Role == "b" && r.Account != v.Quota.Account)) {
+			sessionMatches := accept(session, day.Device+"/"+r.Session) ||
+				(r.FastOwner != "" && session == day.Device+"/"+r.FastOwner)
+			if v.SessionQuota != nil && v.SessionQuota.includes(r.At) && sessionMatches && accountMatches(r, isSimulated) {
+				addEffort(sessionEfforts, r)
+			}
+			if v.Quota != nil && !v.Quota.includes(r.At) {
 				continue
 			}
 			if cfg.Role == "a" {
+				// Device cards cover all local records in the selected time
+				// window, independently of account-attribution filters.
+				if card != nil {
+					card.Total.add(r, v.Quota, factor)
+					add(cardModels[day.Device], r.Model, r.Model, r, factor)
+					if r.Account == "" && !isSimulated {
+						card.Unassigned.add(r, v.Quota, factor)
+						deviceUnassigned.add(r, v.Quota, factor)
+					} else if r.Account != "" && selectedAccount != "" && r.Account != selectedAccount && !isSimulated {
+						card.OtherAccount.add(r, v.Quota, factor)
+					}
+					if !isSimulated {
+						deviceTotal.add(r, v.Quota, factor)
+					}
+					if modeOf(r.Tier) == "fast" {
+						card.FastTotal.add(r, v.Quota, factor)
+						add(cardFastModels[day.Device], r.Model, r.Model, r, factor)
+						addFastSession(day.Device, r, factor)
+					} else if modeOf(r.Tier) == "unknown" {
+						card.TierUnknown++
+					}
+				}
 				if !isSimulated && r.Account == "" {
 					v.UnassignedCount++
 				}
-				if !isSimulated && ((v.Account == "unassigned" && r.Account != "") || (v.Account != "unassigned" && v.Account != "all" && (selectedAccount == "" || r.Account != selectedAccount))) {
-					continue
-				}
-				if isSimulated && v.Account == "unassigned" {
-					continue
-				}
-				if isSimulated && v.Device == "all" {
-					if card != nil {
-						card.Total.add(r, v.Quota, factor)
-						add(cardModels[day.Device], r.Model, r.Model, r, factor)
-					}
+				if !accountMatches(r, isSimulated) {
 					continue
 				}
 				if !accept(project, r.Project) || !accept(model, r.Model) ||
-					!accept(session, day.Device+"/"+r.Session) {
+					!sessionMatches {
 					continue
 				}
 				name := day.Name
+				if day.Device == "local" {
+					name = deviceDisplayName("local", "Mac 1", cfg.DeviceAliases)
+				} else if device, ok := cfg.Devices[day.Device]; ok {
+					name = deviceDisplayName(device.ID, device.Name, cfg.DeviceAliases)
+				}
 				if isSimulated {
 					name += "（模拟）"
 				}
-				matching = append(matching, viewedRequest{Request: r, Device: day.Device, DeviceName: name, Simulated: isSimulated})
+				matching = append(matching, viewedRequest{Request: r, Device: day.Device, DeviceName: name,
+					Simulated: isSimulated, ActualTier: r.actualTier || r.ObservedTier, PriceReason: r.priceReason})
 				add(sessions, day.Device+"/"+r.Session, r.Session[:min(10, len(r.Session))], r, factor)
 				if model != "" {
 					add(efforts, r.Effort, cmp.Or(r.Effort, "未记录"), r, factor)
@@ -347,13 +516,14 @@ func (a *App) view(q url.Values) view {
 			add(projects, r.Project, r.ProjectName, r, factor)
 			add(models, r.Model, r.Model, r, factor)
 			total.add(r, v.Quota, factor)
-			if card != nil {
-				card.Total.add(r, v.Quota, factor)
-				add(cardModels[day.Device], r.Model, r.Model, r, factor)
-			}
 		}
 	}
 	if cfg.Role == "b" {
+		if len(cfg.Pair.Verifier) > 0 {
+			v.Pricing = &pricingStatus{Source: pricing.prefs.Source, Publication: pricing.published, PublicationError: priceSyncError}
+		}
+		summary := display(Group{Total: total}, v.Cache, rule.factor(v.Device), rule.Budget, v.Quota != nil)
+		v.DisplayTotal, v.Count = &summary, total.Count
 		for _, g := range groups(projects, v.Cache) {
 			v.DisplayProjects = append(v.DisplayProjects, display(g, v.Cache, rule.factor(v.Device), rule.Budget, v.Quota != nil))
 		}
@@ -364,13 +534,29 @@ func (a *App) view(q url.Values) view {
 		return v
 	}
 	v.Total = &total
+	if v.Device == "all" {
+		v.DeviceTotal, v.DeviceUnassigned = &deviceTotal, &deviceUnassigned
+	}
 	for id, card := range cards {
+		if card.Telemetry != nil {
+			activity := card.Telemetry.Activity
+			card.ActivityStats = activityStats(activity, v.Quota)
+			if freshObservation(activity, now, observationLimit(id, cfg.Policy)) {
+				card.ActivityLevel = activityLevel(activityFlags(activity), activity.Active > 0)
+			}
+		}
+		if _, paired := cfg.Devices[id]; paired && v.ScaledDevices[id] {
+			card.Scaled, card.DisplayFactor = true, rule.factor(id)
+		}
 		card.Models = groups(cardModels[id], v.Cache)
+		card.FastModels = groups(cardFastModels[id], v.Cache)
+		card.FastSessions = groups(cardFastSessions[id], v.Cache)
 		v.Cards = append(v.Cards, *card)
 	}
 	slices.SortFunc(v.Cards, func(a, b deviceCard) int { return compareChoices(a.choice, b.choice) })
 	v.Projects, v.Models, v.Sessions = groups(projects, v.Cache), groups(models, v.Cache), groups(sessions, v.Cache)
 	v.Efforts = groups(efforts, v.Cache)
+	v.SessionEfforts = groups(sessionEfforts, v.Cache)
 	// Hide secret-free internal account identifiers from individual requests.
 	for i := range matching {
 		matching[i].OtherAccount = !matching[i].Simulated && v.Quota != nil && matching[i].Account != "" && matching[i].Account != v.Quota.Account
@@ -392,12 +578,43 @@ func (a *App) view(q url.Values) view {
 	return v
 }
 
+func modeName(mode string) string {
+	switch mode {
+	case "normal":
+		return "标准"
+	case "fast":
+		return "⚡ Fast"
+	case "ultrafast":
+		return ultrafastLabel
+	default:
+		return "档位未知"
+	}
+}
+
+func effortName(effort string) string {
+	if effort == "xhigh" {
+		return "X High"
+	}
+	return cmp.Or(effort, "未记录")
+}
+
 func accept(selected, value string) bool {
 	return selected == "" || selected == value
 }
 
 func compareChoices(a, b choice) int {
 	return cmp.Or(cmp.Compare(a.Name, b.Name), cmp.Compare(a.ID, b.ID))
+}
+
+func deviceDisplayName(id, slot string, aliases map[string]string) string {
+	name := slot
+	if alias := aliases[id]; alias != "" && alias != slot {
+		name = alias + " · " + slot
+	}
+	if id == "local" {
+		name += "（本机）"
+	}
+	return name
 }
 
 func simulationHasName(devices []choice, enabled map[string]bool, name string) bool {
@@ -412,12 +629,33 @@ func simulationHasName(devices []choice, enabled map[string]bool, name string) b
 func simulationDayForWindow(day Day, quota *Quota, now time.Time) Day {
 	day.Rows = slices.Clone(day.Rows)
 	for i := range day.Rows {
+		if i == 0 && (day.Name == "Mac 2" || day.Name == "Mac 4") {
+			day.Rows[i].Tier, day.Rows[i].FastOwner = "fast", day.Rows[i].Session
+		}
 		if quota != nil {
 			day.Rows[i].Account = quota.Account
 			if quota.includes(now) && !quota.includes(day.Rows[i].At) {
 				day.Rows[i].At = quota.Start
 			}
 		}
+	}
+	if day.Telemetry == nil {
+		active, fast := 1, 0
+		switch day.Name {
+		case "Mac 2":
+			fast = 1
+		case "Mac 3":
+			active = 2
+		case "Mac 4":
+			active, fast = 2, 1
+		}
+		activity := &Activity{At: now, Active: active, Fast: fast, Incomplete: true}
+		if active >= 2 {
+			activity.Intervals = []ActivityInterval{{Start: now.Add(-12 * time.Minute), End: now, Count: active, New: true}}
+		}
+		traffic := &TrafficMonth{Month: now.In(beijing).Format("2006-01"), Since: now.Add(-24 * time.Hour), At: now, Upload: 12 << 20, Download: 64 << 20, Incomplete: true,
+			Groups: []TrafficGroup{{Name: "示例代理组 A", Upload: 8 << 20, Download: 40 << 20}, {Name: "示例代理组 B", Upload: 4 << 20, Download: 24 << 20}}}
+		day.Telemetry = &Telemetry{Version: 1, Activity: activity, Traffic: traffic}
 	}
 	return day
 }

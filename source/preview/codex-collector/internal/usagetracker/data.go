@@ -34,16 +34,24 @@ type Request struct {
 	Session     string    `json:"session"`
 	Model       string    `json:"model"`
 	Effort      string    `json:"effort,omitempty"`
+	Tier        string    `json:"tier,omitempty"`
+	FastOwner   string    `json:"fastOwner,omitempty"`
 	Account     string    `json:"account,omitempty"`
 	Attribution string    `json:"attribution,omitempty"`
 	Tokens
-	USD    float64 `json:"usd"`
-	Priced bool    `json:"priced"`
+	CacheWrites   int     `json:"cacheWrites,omitempty"`
+	CacheWrites1h int     `json:"cacheWrites1h,omitempty"`
+	ObservedTier  bool    `json:"observedTier,omitempty"`
+	USD           float64 `json:"usd"`
+	Priced        bool    `json:"priced"`
 	// A-only evidence stays in memory and is never uploaded with B snapshots.
-	sourceAccount string
-	duration      time.Duration
-	confirmed     bool
-	quotaEvidence []Quota
+	sourceAccount   string
+	duration        time.Duration
+	confirmed       bool
+	quotaEvidence   []Quota
+	actualTier      bool
+	localPriceInput *localPriceInput
+	priceReason     string
 }
 
 type Quota struct {
@@ -90,12 +98,14 @@ func (q Quota) includes(at time.Time) bool {
 }
 
 type Day struct {
-	Device string    `json:"device"`
-	Name   string    `json:"name"`
-	Date   string    `json:"date"`
-	At     time.Time `json:"at"`
-	Rows   []Request `json:"rows"`
-	Quotas []Quota   `json:"quotas,omitempty"`
+	Device     string     `json:"device"`
+	Name       string     `json:"name"`
+	Date       string     `json:"date"`
+	At         time.Time  `json:"at"`
+	CountSince time.Time  `json:"countSince,omitempty"`
+	Rows       []Request  `json:"rows"`
+	Quotas     []Quota    `json:"quotas,omitempty"`
+	Telemetry  *Telemetry `json:"telemetry,omitempty"`
 }
 
 type Policy struct {
@@ -192,27 +202,29 @@ func (t *Total) add(r Request, q *Quota, factor float64) {
 }
 
 type Group struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID     string    `json:"id"`
+	Name   string    `json:"name"`
+	LastAt time.Time `json:"lastAt,omitempty"`
 	Total
 }
 
 type DisplayGroup struct {
-	ID       string   `json:"id"`
-	Name     string   `json:"name"`
-	Tokens   int64    `json:"tokens"`
-	USD      *float64 `json:"usd"`
-	Percent  *float64 `json:"percent,omitempty"`
-	Unpriced int      `json:"unpriced,omitempty"`
+	ID       string    `json:"id"`
+	Name     string    `json:"name"`
+	Tokens   int64     `json:"tokens"`
+	USD      *float64  `json:"usd"`
+	Percent  *float64  `json:"percent,omitempty"`
+	Unpriced int       `json:"unpriced,omitempty"`
+	LastAt   time.Time `json:"lastAt,omitempty"`
 }
 
 func display(g Group, cache bool, factor, budget float64, withPeriod bool) DisplayGroup {
-	out := DisplayGroup{ID: g.ID, Name: g.Name, Tokens: int64(math.Round(float64(g.total(cache)) * factor)), Unpriced: g.Unpriced}
+	out := DisplayGroup{ID: g.ID, Name: g.Name, Tokens: int64(math.Round(float64(g.total(cache)) * factor)), Unpriced: g.Unpriced, LastAt: g.LastAt}
 	if g.Count > g.Unpriced {
 		usd := g.USD * factor
 		out.USD = &usd
-		if withPeriod && g.Estimated > 0 {
-			percent := g.EstimateUSD / budget * 100
+		if withPeriod && budget > 0 {
+			percent := usd / budget * 100
 			out.Percent = &percent
 		}
 	}

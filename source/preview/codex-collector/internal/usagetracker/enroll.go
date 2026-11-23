@@ -10,8 +10,10 @@ import (
 	"errors"
 	"maps"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 )
 
 const enrollments = "enrollments"
@@ -24,10 +26,11 @@ type invitation struct {
 }
 
 type deployment struct {
-	Pair   Pair   `json:"pair"`
-	Name   string `json:"name"`
-	Token  string `json:"token"`
-	Secret []byte `json:"secret"`
+	Pair       Pair   `json:"pair"`
+	Name       string `json:"name"`
+	Token      string `json:"token"`
+	Secret     []byte `json:"secret"`
+	StartFresh bool   `json:"startFresh,omitempty"`
 }
 
 type enrollment struct {
@@ -68,6 +71,9 @@ func (a *App) InstallDeployment(path string) error {
 	if cfg.Role != "" {
 		if cfg.Role == "b" && cfg.Name == d.Name && cfg.Repo == d.Pair.Repo &&
 			cfg.Pair.Recipient == d.Pair.Recipient {
+			if d.StartFresh && cfg.Token != d.Token {
+				return errors.New("这个设备已有旧连接，需先清理旧 B 后再使用新授权")
+			}
 			return nil
 		}
 		if cfg.Role != "b" || cfg.Repo != "" || cfg.Pair.Recipient != "" {
@@ -83,7 +89,46 @@ func (a *App) InstallDeployment(path string) error {
 	}
 	cfg.Role, cfg.Name = "b", label(d.Name)
 	cfg.Repo, cfg.Pair, cfg.Token, cfg.Invite = d.Pair.Repo, d.Pair, d.Token, d.Secret
-	return a.save(cfg)
+	if !d.StartFresh {
+		return a.save(cfg)
+	}
+	cfg.CountSince = time.Now().UTC()
+	var moved []string
+	restore := func() {
+		for _, name := range moved {
+			_ = os.Rename(filepath.Join(a.dir, name+".fresh-staging"), filepath.Join(a.dir, name))
+		}
+	}
+	for _, name := range []string{"activity-history.json", "traffic-ledger.json", "shared-telemetry.json"} {
+		path := filepath.Join(a.dir, name)
+		if _, err := os.Stat(path + ".fresh-staging"); err == nil {
+			restore()
+			return errors.New("发现未完成的旧数据清理，请先检查")
+		} else if !errors.Is(err, os.ErrNotExist) {
+			restore()
+			return err
+		}
+		if err := os.Rename(path, path+".fresh-staging"); err == nil {
+			moved = append(moved, name)
+		} else if !errors.Is(err, os.ErrNotExist) {
+			restore()
+			return err
+		}
+	}
+	if err := a.save(cfg); err != nil {
+		restore()
+		return err
+	}
+	for _, name := range moved {
+		if err := os.Remove(filepath.Join(a.dir, name+".fresh-staging")); err != nil {
+			return errors.New("新授权已保存，但旧设备统计文件未能清理")
+		}
+	}
+	a.telemetryMu.Lock()
+	a.telemetry = Telemetry{}
+	a.traffic = newTrafficLedger(a.dir)
+	a.telemetryMu.Unlock()
+	return nil
 }
 
 func publishEnrollment(ctx context.Context, store transport, cfg *config) error {

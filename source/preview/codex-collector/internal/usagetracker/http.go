@@ -18,20 +18,40 @@ func (a *App) Handler(assets fs.FS) http.Handler {
 	mux.HandleFunc("GET /api/view", func(w http.ResponseWriter, r *http.Request) {
 		jsonResponse(w, http.StatusOK, a.view(r.URL.Query()))
 	})
+	mux.HandleFunc("GET /api/notice-status", func(w http.ResponseWriter, r *http.Request) {
+		if a.config().Role != "a" {
+			http.NotFound(w, r)
+			return
+		}
+		_, permission := a.controllerSettings()
+		jsonResponse(w, http.StatusOK, map[string]string{"permission": permission})
+	})
+	mux.HandleFunc("GET /api/price-status", func(w http.ResponseWriter, r *http.Request) {
+		if a.config().Role != "a" {
+			http.NotFound(w, r)
+			return
+		}
+		jsonResponse(w, http.StatusOK, a.priceStatus())
+	})
 	mux.HandleFunc("POST /api/action/{action}", func(w http.ResponseWriter, r *http.Request) {
 		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
 			jsonResponse(w, http.StatusUnsupportedMediaType, map[string]string{"error": "请使用应用内操作"})
 			return
 		}
-		if !a.work.TryLock() {
+		action := r.PathValue("action")
+		localSetting := action == "device-scale" || action == "desktop-notices" ||
+			action == "price-source" || action == "price-auto" || action == "price-refresh"
+		if !localSetting && !a.work.TryLock() {
 			jsonResponse(w, http.StatusConflict, map[string]string{"error": "正在读取或同步，请稍后重试"})
 			return
 		}
-		defer a.work.Unlock()
+		if !localSetting {
+			defer a.work.Unlock()
+		}
 		ctx, cancel := context.WithTimeout(r.Context(), 4*time.Minute)
 		defer cancel()
 		decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 128<<10))
-		err := a.action(ctx, r.PathValue("action"), decoder)
+		err := a.action(ctx, action, decoder)
 		if err != nil {
 			jsonResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 			return
@@ -57,6 +77,38 @@ func (a *App) action(ctx context.Context, action string, decoder *json.Decoder) 
 		return errors.New("B 端由 A 端管理并自动同步")
 	}
 	switch action {
+	case "price-source":
+		var input struct{ Source string }
+		if err := decode(decoder, &input); err != nil {
+			return err
+		}
+		return a.changePricing(input.Source, nil)
+	case "price-auto":
+		var input struct{ Enabled *bool }
+		if err := decode(decoder, &input); err != nil {
+			return err
+		}
+		if input.Enabled == nil {
+			return errors.New("缺少自动更新设置")
+		}
+		return a.changePricing("", input.Enabled)
+	case "price-refresh":
+		return a.refreshPricing(ctx, true)
+	case "device-scale":
+		var input struct {
+			ID      string
+			Enabled bool
+		}
+		if err := decode(decoder, &input); err != nil {
+			return err
+		}
+		return a.setDeviceScale(input.ID, input.Enabled)
+	case "desktop-notices":
+		var input struct{ Enabled bool }
+		if err := decode(decoder, &input); err != nil {
+			return err
+		}
+		return a.setNoticesEnabled(input.Enabled)
 	case "simulation":
 		var input struct{ Enabled bool }
 		if err := decode(decoder, &input); err != nil {
@@ -126,6 +178,24 @@ func (a *App) action(ctx context.Context, action string, decoder *json.Decoder) 
 			return err
 		}
 		return a.register(input.Code)
+	case "rename-device":
+		var input struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		}
+		if err := decode(decoder, &input); err != nil {
+			return err
+		}
+		return a.renameDevice(input.ID, input.Name)
+	case "reset-remote":
+		var input struct{ Confirm string }
+		if err := decode(decoder, &input); err != nil {
+			return err
+		}
+		if input.Confirm != "reset-remote-devices" {
+			return errors.New("请确认清理远端设备")
+		}
+		return a.resetRemoteDevices(ctx)
 	case "rule":
 		var rule PeriodRule
 		if err := decode(decoder, &rule); err != nil {

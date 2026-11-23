@@ -10,6 +10,7 @@ interface EnhancedCardProps {
   iconColor?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success'
   minHeight?: number | string
   noContentPadding?: boolean
+  warning?: boolean
 }
 
 // 自定义卡片组件
@@ -23,6 +24,7 @@ export const EnhancedCard = forwardRef<HTMLElement, EnhancedCardProps>(
       iconColor = 'primary',
       minHeight,
       noContentPadding = false,
+      warning = false,
     },
     ref,
   ) => {
@@ -46,7 +48,8 @@ export const EnhancedCard = forwardRef<HTMLElement, EnhancedCardProps>(
           display: 'flex',
           flexDirection: 'column',
           borderRadius: 2,
-          backgroundColor: isDark ? '#282a36' : '#ffffff',
+          backgroundColor: warning ? (isDark ? '#302d25' : '#fffaf0') : (isDark ? '#282a36' : '#ffffff'),
+          ...(warning && { outline: `1px solid ${alpha(theme.palette.warning.main, 0.55)}` }),
         }}
         ref={ref}
       >

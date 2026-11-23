@@ -25,7 +25,9 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 import { useAppRefreshers } from '@/providers/app-data-context'
+import { useCodexView } from '@/hooks/use-codex-view'
 import { updateProfile } from '@/services/cmds'
+import { freshActivity } from '@/services/codex-speed'
 import { mutate } from '@/services/mutate'
 import { showNotice } from '@/services/notice-service'
 import { isValidUrl } from '@/utils/network'
@@ -270,6 +272,10 @@ export const HomeProfileCard = ({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { refreshAll } = useAppRefreshers()
+  const { view: codex } = useCodexView()
+  const activity = freshActivity(codex)
+  const concurrent = (activity?.active ?? 0) >= 2
+  const currentModel = codex?.displayModels?.find((item) => item.name.toLowerCase() === codex.speed?.model?.toLowerCase())
 
   // 更新当前订阅
   const [updating, setUpdating] = useState(false)
@@ -368,6 +374,7 @@ export const HomeProfileCard = ({
       icon={<CloudUploadOutlined />}
       iconColor="info"
       action={cardAction}
+      warning={concurrent}
     >
       {current ? (
         <ProfileDetails
@@ -378,6 +385,20 @@ export const HomeProfileCard = ({
       ) : (
         <EmptyProfile onClick={goToProfiles} />
       )}
+      <Box sx={{ mt: 2, pt: 1.5, borderTop: 1, borderColor: 'divider' }}>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          本机模型 {codex?.speed?.model || '等待模型记录'}{activity?.fast ? ' · ⚡ 有会话选择 Fast' : ''}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          速度 {codex?.speed?.rate == null ? '—' : codex.speed.rate.toFixed(2)} tok/s · {codex?.speed?.state === 'idle' ? '当前没有运行中的会话' : codex?.speed?.state === 'unknown' ? '当前会话状态未知' : '最近请求估算'}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          {currentModel ? `${new Intl.NumberFormat('zh-CN').format(currentModel.tokens)} Token · ${currentModel.usd == null ? '—' : `≈$${currentModel.usd.toFixed(2)}`} · ${currentModel.percent == null ? '—' : `${currentModel.percent.toFixed(2)}%`}${currentModel.unpriced ? ` · ${currentModel.unpriced} 条未计价` : ''}` : '当前周期暂无该模型用量'}
+        </Typography>
+        {currentModel && <LinearProgress variant="determinate" value={Math.max(0, Math.min(100, currentModel.percent ?? 0))} sx={{ mt: 0.7 }} />}
+        {concurrent && <Typography variant="body2" sx={{ color: 'warning.dark', mt: 1, fontWeight: 600 }}>当前存在高并发风险，请仅保留一个任务运行。</Typography>}
+        {!concurrent && activity?.uncertain && <Typography variant="caption" color="text.secondary">部分会话状态未知</Typography>}
+      </Box>
     </EnhancedCard>
   )
 }

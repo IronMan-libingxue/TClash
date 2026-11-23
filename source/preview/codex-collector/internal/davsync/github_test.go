@@ -223,10 +223,18 @@ func (f *githubFixture) serve(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		var entries []githubContent
+		directories := map[string]bool{}
 		for key, b := range f.objects {
-			if name, ok := strings.CutPrefix(key, branch+"|"+path+"/"); ok && !strings.Contains(name, "/") {
-				entries = append(entries, githubContent{Type: "file", Name: name, SHA: githubSHA(b), Size: int64(len(b))})
+			if name, ok := strings.CutPrefix(key, branch+"|"+path+"/"); ok {
+				if directory, _, nested := strings.Cut(name, "/"); nested {
+					directories[directory] = true
+				} else {
+					entries = append(entries, githubContent{Type: "file", Name: name, SHA: githubSHA(b), Size: int64(len(b))})
+				}
 			}
+		}
+		for name := range directories {
+			entries = append(entries, githubContent{Type: "dir", Name: name})
 		}
 		if len(entries) > 0 {
 			send(200, entries)

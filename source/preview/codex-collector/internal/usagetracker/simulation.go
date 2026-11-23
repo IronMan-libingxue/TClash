@@ -190,7 +190,7 @@ func readSimulation(root string, now time.Time) ([]Day, []choice, error) {
 			}
 		}
 	}
-	if len(devices) != len(deploymentDevices) || len(days) == 0 {
+	if len(devices) == 0 || len(days) == 0 {
 		return nil, nil, errors.New("模拟设备尚未准备完成")
 	}
 	slices.SortFunc(devices, compareChoices)

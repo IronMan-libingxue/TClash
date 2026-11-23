@@ -22,14 +22,21 @@ import (
 )
 
 type request struct {
-	Window string `json:"window"`
-	Cache  bool   `json:"cache"`
+	Window    string                        `json:"window"`
+	Cache     bool                          `json:"cache"`
+	Operation string                        `json:"operation,omitempty"`
+	Traffic   *usagetracker.TrafficSnapshot `json:"traffic,omitempty"`
 }
 
 func run() error {
 	dataDir := flag.String("data-dir", "", "collector data directory")
 	verifyMigration := flag.Bool("verify-migration", false, "validate a migration without starting a collector")
+	buildInfo := flag.Bool("build-info", false, "print the collector capability version")
 	flag.Parse()
+	if *buildInfo {
+		fmt.Println("tclash-collector-device-reset-v1")
+		return nil
+	}
 	migrationDir := ""
 	controllerHere := false
 	if *dataDir == "" {
@@ -115,12 +122,27 @@ func run() error {
 	}
 	handler := tracker.Handler(os.DirFS(*dataDir))
 	input := bufio.NewScanner(os.Stdin)
-	input.Buffer(make([]byte, 1024), 16<<10)
+	input.Buffer(make([]byte, 1024), 8<<20)
 	output := bufio.NewWriter(os.Stdout)
 	for input.Scan() {
 		var r request
 		if json.Unmarshal(input.Bytes(), &r) != nil {
 			return errors.New("invalid collector request")
+		}
+		if r.Operation == "traffic" {
+			response := map[string]any{"ok": false}
+			if r.Traffic != nil {
+				if err := tracker.RecordTraffic(*r.Traffic); err == nil {
+					response["ok"] = true
+				}
+			}
+			if err := json.NewEncoder(output).Encode(response); err != nil {
+				return err
+			}
+			if err := output.Flush(); err != nil {
+				return err
+			}
+			continue
 		}
 		q := url.Values{"window": {r.Window}}
 		if !r.Cache {

@@ -44,11 +44,32 @@ pub(crate) async fn get_text(client: &Client, url: &str) -> Option<String> {
 }
 
 pub(crate) async fn get_trace_location(client: &Client, url: &str) -> Option<String> {
-    get_text(client, url)
-        .await?
-        .lines()
-        .find_map(|line| line.strip_prefix("loc="))
-        .map(str::to_owned)
+    parse_trace(&get_text(client, url).await?).0
+}
+
+pub(crate) async fn get_trace(client: &Client, url: &str) -> (Option<String>, Option<String>) {
+    get_text(client, url).await.map(|body| parse_trace(&body)).unwrap_or_default()
+}
+
+fn parse_trace(body: &str) -> (Option<String>, Option<String>) {
+    let location = body.lines().find_map(|line| line.strip_prefix("loc=")).map(str::to_owned);
+    let ip = body.lines().find_map(|line| line.strip_prefix("ip="))
+        .and_then(|value| value.trim().parse::<std::net::IpAddr>().ok())
+        .map(|value| value.to_string());
+    (location, ip)
+}
+
+#[cfg(test)]
+mod trace_tests {
+    use super::parse_trace;
+
+    #[test]
+    fn trace_extracts_only_a_valid_reported_address() {
+        assert_eq!(parse_trace("loc=JP\nip=203.0.113.7\n"), (Some("JP".into()), Some("203.0.113.7".into())));
+        assert_eq!(parse_trace("loc=US\nip=not-an-ip\n"), (Some("US".into()), None));
+        assert_eq!(parse_trace("loc=US\n"), (Some("US".into()), None));
+        assert_eq!(parse_trace("ip=2001:db8::1\n"), (None, Some("2001:db8::1".into())));
+    }
 }
 
 pub(crate) fn extract_quoted_field<'a>(body: &'a str, key: &str) -> Option<&'a str> {

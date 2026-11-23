@@ -17,6 +17,29 @@ type speedReading struct {
 	Rate  *float64  `json:"rate,omitempty"`
 	At    time.Time `json:"at"`
 	Whole bool      `json:"wholeRequest,omitempty"`
+	State string    `json:"state,omitempty"`
+}
+
+func activityFresh(activity *Activity, now time.Time) bool {
+	if activity == nil || activity.At.IsZero() {
+		return false
+	}
+	age := now.Sub(activity.At)
+	return age >= -5*time.Minute && age < 30*time.Second
+}
+
+func visibleSpeed(speed speedReading, activity *Activity, now time.Time) speedReading {
+	if !activityFresh(activity, now) || (activity.Active == 0 && activity.Uncertain) {
+		speed.Rate, speed.State = nil, "unknown"
+		return speed
+	}
+	if activity.Active == 0 {
+		zero := 0.0
+		speed.Rate, speed.State = &zero, "idle"
+		return speed
+	}
+	speed.State = "active"
+	return speed
 }
 
 func (a *App) sampleSpeed(ctx context.Context) {

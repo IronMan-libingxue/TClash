@@ -51,7 +51,7 @@ case "$mode" in
     /usr/bin/ditto -c -k --keepParent "$bundle" "$assets/Codex Usage Mac.zip"
     cp "$stage"/codex-usage-windows-*.exe "$stage/Magpie-LICENSE.txt" "$assets/"
     if [ -n "${TRACKER_TCLASH_ASSETS:-}" ]; then
-      for asset in "TClash Preview Mac.zip" "TClash Preview Windows x64.exe" "TClash Preview Windows arm64.exe" "TClash-LICENSE.txt"; do
+      for asset in "TClash Preview Mac.zip" "TClash Preview Windows x64.exe" "TClash Preview Windows arm64.exe" "TClash-LICENSE.txt" "TClash Windows OneClick.exe" "TClash Windows App x64.exe" "TClash Windows App arm64.exe" "TClash Windows Collector x64.exe" "TClash Windows Collector arm64.exe" "TClash Mac OneClick"; do
         test -f "$TRACKER_TCLASH_ASSETS/$asset"
         cp "$TRACKER_TCLASH_ASSETS/$asset" "$assets/$asset"
       done

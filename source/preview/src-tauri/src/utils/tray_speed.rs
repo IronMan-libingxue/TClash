@@ -124,7 +124,7 @@ fn apply_status_item_attributed_title(status_item: &NSStatusItem, text: &str, sh
         let (advance, attrs) = cached_attributes(button.bounds().size.height);
         let attrs: &NSDictionary<NSString, AnyObject> = &attrs;
         let attr_str = create_attributed_string(&ns_string, Some(attrs));
-        let width = arithmetic_width(text, advance);
+        let width = attr_str.size().width.max(arithmetic_width(text, advance));
         let length = (width.ceil() + TRAY_STATUS_ITEM_EXTRA_WIDTH).max(TRAY_STATUS_ITEM_MIN_LENGTH);
         if status_item.length() != length {
             status_item.setLength(length);
@@ -146,6 +146,19 @@ pub fn set_speed_attributed_title(status_item: &NSStatusItem, up: u64, down: u64
         }
         *last = speed_text;
         apply_status_item_attributed_title(status_item, last.as_str(), true);
+    });
+}
+
+pub fn set_codex_attributed_title(status_item: &NSStatusItem, model: &str, rate: Option<f64>, down: Option<u64>) {
+    let value = rate.map_or_else(|| "—".to_string(), |n| format!("{n:.2}"));
+    let download = down.map_or_else(|| "—".to_string(), format_bytes_per_second);
+    let text = format!("{}: {} tok/s\n{}", if model.is_empty() { "模型速度" } else { model }, value, download);
+    LAST_DISPLAY_STR.with(|last| {
+        let mut last = last.borrow_mut();
+        if last.as_str() != text {
+            *last = text;
+            apply_status_item_attributed_title(status_item, last.as_str(), true);
+        }
     });
 }
 

@@ -21,7 +21,8 @@ var deploymentDevices = []struct {
 	Name string
 	Mac  bool
 }{
-	{"Mac 2", true}, {"Mac 3", true}, {"Mac 4", true}, {"Windows 1", false}, {"Windows 2", false},
+	{"Mac 2", true}, {"Mac 3", true}, {"Mac 4", true}, {"Mac 5", true}, {"Mac 6", true},
+	{"Windows 1", false}, {"Windows 2", false}, {"Windows 3", false},
 }
 
 const macTemplate = "Codex Usage Mac.zip"
@@ -32,6 +33,12 @@ const tclashMacTemplate = "TClash Preview Mac.zip"
 const tclashWindowsAMD64 = "TClash Preview Windows x64.exe"
 const tclashWindowsARM64 = "TClash Preview Windows arm64.exe"
 const tclashLicense = "TClash-LICENSE.txt"
+const tclashWindowsBootstrap = "TClash Windows OneClick.exe"
+const tclashWindowsAppAMD64 = "TClash Windows App x64.exe"
+const tclashWindowsAppARM64 = "TClash Windows App arm64.exe"
+const tclashWindowsCollectorAMD64 = "TClash Windows Collector x64.exe"
+const tclashWindowsCollectorARM64 = "TClash Windows Collector arm64.exe"
+const tclashMacBootstrap = "TClash Mac OneClick"
 
 func (a *App) SetInstallerAssets(dir string) { a.installerAssets = dir }
 
@@ -55,7 +62,11 @@ func (a *App) exportTClashMigration(name string) error {
 	if cfg.Role != "a" {
 		return errors.New("只有 A 端可以生成迁移安装包")
 	}
-	if name != "Windows 1" && name != "Windows 2" {
+	var windows bool
+	for _, device := range deploymentDevices {
+		windows = windows || (device.Name == name && !device.Mac)
+	}
+	if !windows {
 		return errors.New("当前仅支持 Windows 设备迁移")
 	}
 	paired := false
@@ -142,9 +153,9 @@ func (a *App) exportOneDeploymentKind(ctx context.Context, name, token string, t
 		templates = []string{macTemplate}
 	}
 	if tclash {
-		templates = []string{tclashWindowsAMD64, tclashWindowsARM64, tclashLicense}
+		templates = []string{tclashWindowsBootstrap, tclashWindowsAMD64, tclashWindowsARM64, tclashWindowsAppAMD64, tclashWindowsAppARM64, tclashWindowsCollectorAMD64, tclashWindowsCollectorARM64, tclashLicense}
 		if target.Mac {
-			templates = []string{tclashMacTemplate, tclashLicense}
+			templates = []string{tclashMacBootstrap, tclashMacTemplate, tclashLicense}
 		}
 	}
 	for _, file := range templates {
@@ -170,7 +181,10 @@ func (a *App) exportOneDeploymentKind(ctx context.Context, name, token string, t
 	}
 	filename := name + ".zip"
 	if tclash {
-		filename = name + " TClash.zip"
+		filename = name + " TClash.exe"
+		if target.Mac {
+			filename = name + " TClash 安装.app"
+		}
 	}
 	path := filepath.Join(dir, filename)
 	created := false
@@ -178,7 +192,7 @@ func (a *App) exportOneDeploymentKind(ctx context.Context, name, token string, t
 	defer func() {
 		if !created {
 			if written {
-				_ = os.Remove(path)
+				_ = os.RemoveAll(path)
 			}
 			if newDir {
 				_ = os.Remove(dir)
@@ -189,7 +203,7 @@ func (a *App) exportOneDeploymentKind(ctx context.Context, name, token string, t
 	if tclash {
 		write = writeTClashDeployment
 	}
-	if err := write(path, a.installerAssets, deployment{pair, name, token, invite.Secret}, target.Mac); err != nil {
+	if err := write(path, a.installerAssets, deployment{Pair: pair, Name: name, Token: token, Secret: invite.Secret, StartFresh: true}, target.Mac); err != nil {
 		return err
 	}
 	written = true
@@ -217,10 +231,10 @@ func (a *App) exportDeployments(ctx context.Context, tokens []string) error {
 		return errors.New("请先在 A 端连接专用私有仓库")
 	}
 	if cfg.DeploymentDir != "" {
-		return errors.New("五份安装包已生成")
+		return errors.New("设备安装包已生成")
 	}
 	if len(tokens) != len(deploymentDevices) {
-		return errors.New("请为五台设备填写各自的仓库访问令牌")
+		return errors.New("请为每台设备填写各自的仓库访问令牌")
 	}
 	pair, err := cfg.pair()
 	if err != nil {
@@ -271,7 +285,7 @@ func (a *App) exportDeployments(ctx context.Context, tokens []string) error {
 		}
 		cfg.Invites[invitationID(invite.Secret)] = invite
 		cfg.DeploymentTokenHashes[target.Name] = digest("deployment-token", strings.TrimSpace(tokens[i]))
-		d := deployment{pair, target.Name, strings.TrimSpace(tokens[i]), invite.Secret}
+		d := deployment{Pair: pair, Name: target.Name, Token: strings.TrimSpace(tokens[i]), Secret: invite.Secret, StartFresh: true}
 		path := filepath.Join(dir, target.Name+".zip")
 		if err := writeDeployment(path, a.installerAssets, d, target.Mac); err != nil {
 			return err
@@ -354,7 +368,10 @@ func writeDeployment(path, assets string, d deployment, mac bool) (err error) {
 }
 
 func writeTClashDeployment(path, assets string, d deployment, mac bool) error {
-	return writeTClashPackage(path, assets, &d, mac, "")
+	if mac {
+		return writeTClashMacOneClick(path, assets, d)
+	}
+	return writeTClashWindowsOneClick(path, assets, d)
 }
 
 func writeTClashPackage(path, assets string, d *deployment, mac bool, migrationName string) (err error) {
@@ -386,6 +403,23 @@ func writeTClashPackage(path, assets string, d *deployment, mac bool, migrationN
 	}
 	if _, err = w.Write(body); err != nil {
 		return err
+	}
+	if d != nil {
+		readme := "README.tclash.windows.txt"
+		if mac {
+			readme = "README.tclash.mac.txt"
+		}
+		body, err = installFiles.ReadFile("install/" + readme)
+		if err != nil {
+			return err
+		}
+		w, err = z.Create(readme)
+		if err != nil {
+			return err
+		}
+		if _, err = w.Write(body); err != nil {
+			return err
+		}
 	}
 	authorization := "enrollment.json"
 	if d == nil {

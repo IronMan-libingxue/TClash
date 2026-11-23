@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -28,14 +29,17 @@ import (
 const retention = 90
 
 type Collector struct {
-	mu    sync.Mutex
-	files map[string]rolloutCache
+	mu         sync.Mutex
+	files      map[string]rolloutCache
+	controller bool
 }
 
 type rolloutCache struct {
-	size     int64
-	mod      time.Time
-	readings []Quota
+	size       int64
+	mod        time.Time
+	readings   []Quota
+	tiers      []activityEvent
+	controller bool
 }
 
 func UseLocalCodex(dataDir string) error {
@@ -79,6 +83,7 @@ func currentAccount() string {
 func (c *Collector) Days(ctx context.Context, device, name string, extra []Quota, corrections []AccountCorrection) ([]Day, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	c.controller = device == "local"
 	now := time.Now().UTC()
 	since := now.Truncate(24*time.Hour).AddDate(0, 0, 1-retention)
 	if _, err := os.Stat(filepath.Join(sessions.CodexDir(), "sessions")); err != nil &&
@@ -116,6 +121,8 @@ func (c *Collector) Days(ctx context.Context, device, name string, extra []Quota
 	processed := map[string]string{}
 	prices := map[string]catalog.Price{}
 	priceKnown := map[string]bool{}
+	identities := sessions.CodexIdentities()
+	tierFiles := map[string][]activityEvent{}
 	for _, call := range calls {
 		if err := ctx.Err(); err != nil {
 			return nil, err
@@ -151,12 +158,10 @@ func (c *Collector) Days(ctx context.Context, device, name string, extra []Quota
 				processed[call.File] = account
 			}
 		}
-		model := label(call.Model)
+		modelKey := label(call.Model)
+		model := modelKey
 		if model == "" {
 			model = "模型未知"
-		}
-		if _, ok := priceKnown[model]; !ok {
-			prices[model], priceKnown[model] = sessions.PriceOf(settings.Settings{}, model)
 		}
 		project, projectName := projectLabel(call.Cwd)
 		thread := call.ThreadID
@@ -165,6 +170,28 @@ func (c *Collector) Days(ctx context.Context, device, name string, extra []Quota
 		}
 		if thread == "" {
 			thread = call.File
+		}
+		var tier, fastOwner string
+		var actualTier bool
+		if call.File != "" {
+			readings, ok := tierFiles[call.File]
+			if !ok {
+				if _, readErr := c.quotaReadings(call.File); readErr == nil {
+					readings = c.files[call.File].tiers
+				}
+				tierFiles[call.File] = readings
+			}
+			tier, actualTier = requestTier(readings, call.Time)
+		}
+		if tier == "fast" || tier == "ultrafast" {
+			identity := identities[thread]
+			root := identity.RootSession
+			if identity.Role == "main" {
+				root = thread
+			}
+			if root != "" {
+				fastOwner = digest("session", root)
+			}
 		}
 		id := requestID(call, thread)
 		corrected, confirmed := attributions.rows[id]
@@ -176,20 +203,53 @@ func (c *Collector) Days(ctx context.Context, device, name string, extra []Quota
 			evidence, _ = c.quotaReadings(call.File)
 		}
 		day := dayAt(call.Time)
-		day.Rows = append(day.Rows, Request{
+		row := Request{
 			ID: id, At: call.Time.UTC(), Project: project, ProjectName: projectName,
-			Session: digest("session", thread), Model: model, Effort: strings.ToLower(label(call.Effort)), Account: account,
-			Tokens: Tokens{Input: int64(call.Input), Output: int64(call.Output), Cache: int64(call.CacheRead + call.CacheWrite)},
-			USD:    prices[model].At(0).CostSplit(call.Input, call.Output, call.CacheRead, call.CacheWrite, call.CacheWrite1h),
-			Priced: priceKnown[model], sourceAccount: accountKey(call.AccountID), duration: time.Duration(call.Millis) * time.Millisecond,
+			Session: digest("session", thread), Model: model, Effort: strings.ToLower(label(call.Effort)), Account: account, Tier: tier, FastOwner: fastOwner,
+			Tokens:        Tokens{Input: int64(call.Input), Output: int64(call.Output), Cache: int64(call.CacheRead + call.CacheWrite)},
+			CacheWrites:   call.CacheWrite,
+			CacheWrites1h: call.CacheWrite1h,
+			ObservedTier:  actualTier,
+			actualTier:    actualTier,
+			sourceAccount: accountKey(call.AccountID), duration: time.Duration(call.Millis) * time.Millisecond,
 			confirmed: confirmed, quotaEvidence: evidence,
-		})
+		}
+		if c.controller {
+			row.localPriceInput = &localPriceInput{Model: modelKey, Provider: call.Upstream,
+				CacheRead: call.CacheRead, CacheWrite: call.CacheWrite, Write1h: call.CacheWrite1h}
+		} else {
+			if _, ok := priceKnown[model]; !ok {
+				prices[model], priceKnown[model] = sessions.PriceOf(settings.Settings{}, model)
+			}
+			row.USD = prices[model].At(0).CostSplit(call.Input, call.Output, call.CacheRead, call.CacheWrite, call.CacheWrite1h)
+			row.Priced = priceKnown[model]
+		}
+		day.Rows = append(day.Rows, row)
 	}
 	for _, q := range seenQuota {
 		day := dayAt(q.At)
 		day.Quotas = append(day.Quotas, q)
 	}
 	return sortedDays(days), nil
+}
+
+func requestTier(events []activityEvent, at time.Time) (string, bool) {
+	end := sort.Search(len(events), func(i int) bool { return events[i].At.After(at) })
+	var selected string
+	for i := end - 1; i >= 0; i-- {
+		event := events[i]
+		if event.Kind == "actual_tier" {
+			if event.At.Equal(at) {
+				return event.Tier, true
+			}
+		} else if selected == "" {
+			selected = event.Tier
+		}
+		if selected != "" && !event.At.Equal(at) {
+			break
+		}
+	}
+	return selected, false
 }
 
 func projectLabel(path string) (string, string) {
@@ -237,7 +297,7 @@ func (c *Collector) quotaReadings(path string) ([]Quota, error) {
 		}
 		return nil, err
 	}
-	if cached := c.files[path]; cached.size == info.Size() && cached.mod.Equal(info.ModTime()) {
+	if cached := c.files[path]; cached.size == info.Size() && cached.mod.Equal(info.ModTime()) && cached.controller == c.controller {
 		return cached.readings, nil
 	}
 	file, err := os.Open(path)
@@ -254,20 +314,23 @@ func (c *Collector) quotaReadings(path string) ([]Quota, error) {
 		defer reader.Close()
 		source = reader
 	}
-	got, err := readQuotaLines(source)
+	got, tiers, err := readQuotaLines(source, true)
 	if err != nil {
 		return nil, err
 	}
 	slices.SortFunc(got, func(a, b Quota) int { return a.At.Compare(b.At) })
+	slices.SortStableFunc(tiers, func(a, b activityEvent) int { return a.At.Compare(b.At) })
 	if c.files == nil {
 		c.files = map[string]rolloutCache{}
 	}
-	c.files[path] = rolloutCache{size: info.Size(), mod: info.ModTime(), readings: got}
+	c.files[path] = rolloutCache{size: info.Size(), mod: info.ModTime(), readings: got, tiers: tiers, controller: c.controller}
 	return got, nil
 }
 
-func readQuotaLines(source io.Reader) ([]Quota, error) {
+func readQuotaLines(source io.Reader, controller bool) ([]Quota, []activityEvent, error) {
 	var result []Quota
+	var tiers []activityEvent
+	parser := &activityMonitor{controller: controller}
 	reader := bufio.NewReaderSize(source, 64<<10)
 	for {
 		line, err := reader.ReadSlice('\n')
@@ -276,20 +339,27 @@ func readQuotaLines(source io.Reader) ([]Quota, error) {
 				_, err = reader.ReadSlice('\n')
 			}
 			if errors.Is(err, io.EOF) {
-				return result, nil
+				return result, tiers, nil
 			}
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			continue
 		}
 		if errors.Is(err, io.EOF) {
-			return result, nil
+			return result, tiers, nil
 		}
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		if !bytes.Contains(line, []byte(`"token_count"`)) || !bytes.Contains(line, []byte(`"rate_limits"`)) {
+		if bytes.Contains(line, []byte(`"thread_settings_applied"`)) ||
+			(controller && bytes.Contains(line, []byte(`"turn_context"`)) && bytes.Contains(line, []byte(`"service_tier"`))) {
+			if event, ok := parser.parseLine(line, ""); ok && event.Tier != "" {
+				tiers = append(tiers, event)
+			}
+		}
+		if !bytes.Contains(line, []byte(`"token_count"`)) ||
+			(!bytes.Contains(line, []byte(`"rate_limits"`)) && !(controller && bytes.Contains(line, []byte(`"actual_service_tier"`)))) {
 			continue
 		}
 		var event struct {
@@ -298,7 +368,8 @@ func readQuotaLines(source io.Reader) ([]Quota, error) {
 			Payload struct {
 				Type string `json:"type"`
 				Info struct {
-					Last struct {
+					ActualTier string `json:"actual_service_tier"`
+					Last       struct {
 						Input  int64 `json:"input_tokens"`
 						Output int64 `json:"output_tokens"`
 						Cached int64 `json:"cached_input_tokens"`
@@ -314,10 +385,16 @@ func readQuotaLines(source io.Reader) ([]Quota, error) {
 			} `json:"payload"`
 		}
 		if json.Unmarshal(line, &event) != nil || event.Type != "event_msg" ||
-			event.Payload.Type != "token_count" || (event.Payload.Rate.ID != "" && event.Payload.Rate.ID != "codex") {
+			event.Payload.Type != "token_count" {
 			continue
 		}
+		if controller && event.Payload.Info.ActualTier != "" && !event.At.IsZero() {
+			tiers = append(tiers, activityEvent{At: event.At, Kind: "actual_tier", Tier: modeOf(event.Payload.Info.ActualTier)})
+		}
 		rate := event.Payload.Rate
+		if rate.ID != "" && rate.ID != "codex" {
+			continue
+		}
 		for _, w := range []loggedWindow{rate.Primary, rate.Secondary} {
 			if q, ok := w.reading(event.At, rate.Plan); ok {
 				q.sourceEventHash = digest("quota-event", string(line))

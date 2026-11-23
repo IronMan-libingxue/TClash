@@ -330,7 +330,8 @@ impl Tray {
             return Ok(());
         };
 
-        logging_error!(Type::Tray, tray.set_tooltip(Some(&tooltip)));
+        let _ = tooltip;
+        logging_error!(Type::Tray, tray.set_tooltip(None::<&str>));
 
         Ok(())
     }
@@ -409,7 +410,8 @@ impl Tray {
 
     #[cfg(target_os = "macos")]
     pub fn update_speed_task(&self, enable_tray_speed: bool) {
-        self.speed_controller.update_task(enable_tray_speed);
+        let _ = enable_tray_speed;
+        self.speed_controller.update_task(false);
     }
 }
 
@@ -826,6 +828,8 @@ async fn create_tray_menu(
 
     let quit = &MenuItem::with_id(app_handle, MenuIds::EXIT, &texts.exit, true, quit_accelerator)?;
 
+    let pin_note = &CheckMenuItem::with_id(app_handle, "tray_pin_codex_note", "钉住便签", true, crate::tclash_note::is_pinned(), None::<&str>)?;
+
     let separator = &PredefinedMenuItem::separator(app_handle)?;
 
     let mut menu_items: Vec<&dyn IsMenuItem<Wry>> = vec![open_window, separator];
@@ -857,6 +861,7 @@ async fn create_tray_menu(
         system_proxy as &dyn IsMenuItem<Wry>,
         tun_mode as &dyn IsMenuItem<Wry>,
         separator,
+        pin_note as &dyn IsMenuItem<Wry>,
         lightweight_mode as &dyn IsMenuItem<Wry>,
         open_dir as &dyn IsMenuItem<Wry>,
         more as &dyn IsMenuItem<Wry>,
@@ -869,11 +874,12 @@ async fn create_tray_menu(
 }
 
 fn on_tray_icon_event(_tray_icon: &TrayIcon, tray_event: TrayIconEvent) {
-    if matches!(
-        tray_event,
-        TrayIconEvent::Move { .. } | TrayIconEvent::Leave { .. } | TrayIconEvent::Enter { .. }
-    ) {
-        return;
+    match &tray_event {
+        TrayIconEvent::Enter { position, .. } => { crate::tclash_note::enter(position.x, position.y); return; }
+        TrayIconEvent::Move { position, .. } => { crate::tclash_note::remember_anchor(position.x, position.y); return; }
+        TrayIconEvent::Leave { .. } => { crate::tclash_note::leave(); return; }
+        TrayIconEvent::Click { position, .. } => crate::tclash_note::remember_anchor(position.x, position.y),
+        _ => {}
     }
 
     if let TrayIconEvent::Click {
@@ -924,6 +930,10 @@ fn on_menu_event(_: &AppHandle, event: MenuEvent) {
     }
     AsyncHandler::spawn(|| async move {
         match event.id.as_ref() {
+            "tray_pin_codex_note" => {
+                crate::tclash_note::toggle_pinned();
+                logging_error!(Type::Tray, Tray::global().update_menu().await);
+            }
             mode @ (MenuIds::RULE_MODE | MenuIds::GLOBAL_MODE | MenuIds::DIRECT_MODE) => {
                 if let Some(final_mode) = mode.strip_circumfix("tray_", "_mode") {
                     logging!(info, Type::ProxyMode, "Switch Proxy Mode To: {}", final_mode);

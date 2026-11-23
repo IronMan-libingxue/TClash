@@ -105,11 +105,11 @@ func TestSimulatedDevicesStaySeparateFromRealTotals(t *testing.T) {
 	a := &App{cfg: cfg, local: []Day{local}, remote: []Day{remote}, simulated: testDays, simulationDevices: devices, localAccount: q.Account}
 	v := a.view(nil)
 	if v.Count != 2 || v.Total.total(true) != 55 || v.Total.USD != 6 ||
-		v.Total.EstimateUSD != 9 || v.Quota == nil || v.Quota.Used != 73 {
+		v.Total.EstimateUSD != 6 || v.Quota == nil || v.Quota.Used != 73 {
 		t.Fatalf("simulated usage changed real totals or official reading: %+v", v.Total)
 	}
-	if len(v.Cards) != 6 {
-		t.Fatalf("expected six cards, got %d", len(v.Cards))
+	if len(v.Cards) != 1+len(deploymentDevices) {
+		t.Fatalf("expected local and all preset cards, got %d", len(v.Cards))
 	}
 	var sim *deviceCard
 	for i := range v.Cards {
@@ -121,7 +121,7 @@ func TestSimulatedDevicesStaySeparateFromRealTotals(t *testing.T) {
 			sim = card
 		}
 	}
-	if sim == nil || !sim.Simulated || sim.Total.total(true) != 220 || sim.Total.EstimateUSD != 18 {
+	if sim == nil || !sim.Simulated || sim.Total.total(true) != 220 || sim.Total.EstimateUSD != 12 {
 		t.Fatalf("simulation card missing or incorrect: %+v", sim)
 	}
 	filter := url.Values{"device": {"simulation-mac3"}, "model": {"mock-model"}, "window": {q.id()}}
@@ -137,7 +137,7 @@ func TestSimulatedDevicesStaySeparateFromRealTotals(t *testing.T) {
 	cfg.ShowSimulation = false
 	a.cfg = cfg
 	hidden := a.view(nil)
-	if hidden.Count != 2 || hidden.Total.total(true) != 55 || len(hidden.Cards) != 6 {
+	if hidden.Count != 2 || hidden.Total.total(true) != 55 || len(hidden.Cards) != 1+len(deploymentDevices) {
 		t.Fatal("hiding simulation changed real data or missing-device placeholders")
 	}
 	for _, card := range hidden.Cards {
@@ -192,11 +192,27 @@ func TestSimulationReadsOnlyAuthenticatedMockData(t *testing.T) {
 		t.Fatal(err)
 	}
 	days, devices, err := readSimulation(root, now)
-	if err != nil || len(days) != 5 || len(devices) != 5 {
+	if err != nil || len(days) != len(deploymentDevices) || len(devices) != len(deploymentDevices) {
 		t.Fatalf("could not read isolated test data: %v", err)
 	}
 	if len(days[0].Quotas) != 0 || days[0].Device[:len(simulationPrefix)] != simulationPrefix {
 		t.Fatal("simulated official quota was retained")
+	}
+	oldCfg := cfg
+	oldCfg.Devices = map[string]Device{}
+	for id, device := range cfg.Devices {
+		if device.Name != "Mac 5" && device.Name != "Mac 6" && device.Name != "Windows 3" {
+			oldCfg.Devices[id] = device
+		}
+	}
+	if err := owner.save(oldCfg); err != nil {
+		t.Fatal(err)
+	}
+	if _, oldDevices, err := readSimulation(root, now); err != nil || len(oldDevices) != 5 {
+		t.Fatal("the existing five-device simulation is no longer readable")
+	}
+	if err := owner.save(cfg); err != nil {
+		t.Fatal(err)
 	}
 	real := Day{Device: first.ID, Name: first.Name, Date: now.Format(time.DateOnly), At: now,
 		Rows: []Request{{ID: "not-a-demo", Model: "real", At: now, Account: "real-account"}}}

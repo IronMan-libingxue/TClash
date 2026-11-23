@@ -36,6 +36,11 @@ func (a *App) syncNow(ctx context.Context, cfg config) error {
 	}
 	if err == nil {
 		cfg.LastSync = time.Now()
+		if cfg.Role == "a" && len(cfg.Devices) > 0 {
+			priceContext, cancel := context.WithTimeout(ctx, 8*time.Second)
+			a.setPriceSyncError(a.publishPricing(priceContext, store, &cfg, cfg.LastSync))
+			cancel()
+		}
 	}
 	// A successful part of a sync is still useful if the next file fails.
 	return errors.Join(err, a.save(cfg))
@@ -58,9 +63,13 @@ func (a *App) syncA(ctx context.Context, store transport, cfg *config) error {
 	old := a.cachedDays(*cfg)
 	defer func() {
 		days := a.cachedDays(*cfg)
+		a.pricingJob.Lock()
 		a.mu.Lock()
+		priceRequests(days, a.pricing, true)
 		a.remote = days
 		a.mu.Unlock()
+		a.pricingJob.Unlock()
+		a.observeNotices(*cfg, observations(days), time.Now().UTC(), observations(old)...)
 	}()
 	byDay := make(map[string]Day, len(old))
 	for _, day := range old {
@@ -141,7 +150,11 @@ func (a *App) syncB(ctx context.Context, store transport, cfg *config) error {
 	if err := receivePolicy(ctx, store, cfg); err != nil {
 		return err
 	}
-	return a.upload(ctx, store, cfg)
+	err := a.upload(ctx, store, cfg)
+	priceContext, cancel := context.WithTimeout(ctx, 8*time.Second)
+	defer cancel()
+	a.setPriceSyncError(a.receivePricing(priceContext, store, *cfg))
+	return err
 }
 
 func (a *App) runCollector(ctx context.Context, cfg config, first bool, now time.Time) error {
@@ -166,6 +179,9 @@ func (a *App) runCollector(ctx context.Context, cfg config, first bool, now time
 	if err == nil {
 		cfg.LastSync = now
 	}
+	priceContext, cancel := context.WithTimeout(ctx, 8*time.Second)
+	a.setPriceSyncError(a.receivePricing(priceContext, store, cfg))
+	cancel()
 	return errors.Join(err, a.save(cfg))
 }
 
@@ -174,8 +190,26 @@ func (a *App) upload(ctx context.Context, store transport, cfg *config) error {
 		return err
 	}
 	a.mu.RLock()
-	days := a.local
+	days := slices.Clone(a.local)
 	a.mu.RUnlock()
+	// The current observation is sent with the daily encrypted snapshot even
+	// when Token usage is unchanged, subject to the existing upload interval.
+	telemetry := a.telemetrySnapshot()
+	if telemetry.Version > 0 {
+		now := time.Now().UTC()
+		date := now.Format(time.DateOnly)
+		found := false
+		for i := range days {
+			if days[i].Date == date {
+				days[i].At, days[i].Telemetry = now, &telemetry
+				found = true
+				break
+			}
+		}
+		if !found {
+			days = append(days, Day{Device: cfg.device().ID, Name: cfg.Name, Date: date, At: now, CountSince: cfg.CountSince, Telemetry: &telemetry})
+		}
+	}
 	cfg.Uploaded = maps.Clone(cfg.Uploaded)
 	if cfg.Uploaded == nil {
 		cfg.Uploaded = map[string]string{}
@@ -245,7 +279,7 @@ func (a *App) setRule(rule PeriodRule) error {
 		}
 	}
 	a.mu.RLock()
-	windows := periods(slices.Concat(a.local, a.remote))
+	windows := periods(a.local)
 	a.mu.RUnlock()
 	found := false
 	for _, q := range windows {

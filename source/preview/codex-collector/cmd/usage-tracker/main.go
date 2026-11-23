@@ -70,6 +70,9 @@ func main() {
 	if !held {
 		log.Fatal("这个数据目录已被另一个 Codex 用量窗口打开")
 	}
+	if err := usagetracker.UseLocalCodex(dir); err != nil {
+		log.Fatal(err)
+	}
 	tracker, err := usagetracker.New(dir, *role)
 	if err != nil {
 		log.Fatal(err)
@@ -112,18 +115,15 @@ func main() {
 			}
 		}
 	}
-	if err := usagetracker.UseLocalCodex(dir); err != nil {
-		log.Fatal(err)
-	}
 	files, err := fs.Sub(embedded, "assets")
 	if err != nil {
 		log.Fatal(err)
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
-	tracker.Start(ctx)
 	handler := tracker.Handler(files)
 	if *web {
+		tracker.Start(ctx)
 		if err := serveWeb(ctx, handler, dir, *port); err != nil {
 			log.Fatal(err)
 		}
@@ -135,6 +135,14 @@ func main() {
 		Mac:        application.MacOptions{ActivationPolicy: application.ActivationPolicyRegular},
 		OnShutdown: cancel,
 	})
+	if !collector {
+		if desktop := nativeNotices(); desktop.Show != nil {
+			tracker.AttachDesktopNotices(desktop)
+			app.Event.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(*application.ApplicationEvent) {
+				tracker.RequestDesktopNotices()
+			})
+		}
+	}
 	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: name, URL: "/", Width: 1210, Height: 820, MinWidth: 640, MinHeight: 520,
 		Hidden: collector && *background,
@@ -156,6 +164,7 @@ func main() {
 		tray.SetMenu(menu)
 		tray.OnClick(show)
 	}
+	tracker.Start(ctx)
 	if err := app.Run(); err != nil {
 		log.Fatal(err)
 	}
