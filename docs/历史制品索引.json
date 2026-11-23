@@ -3177,5 +3177,380 @@
     "parts": [
       "TClash-history-17.tar.zst.gpg"
     ]
+  },
+  {
+    "id": "V152",
+    "digest": "9c91117314b1820d3ef2306472d9d41f7af9814d266434680fd4578121bfe360",
+    "bytes": 250293421,
+    "entry_count": 1,
+    "label": "Windows 1 TClash 迁移.zip",
+    "kind": ".zip",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/a-package-previous-jrchfl1c/Windows 1 TClash 迁移.zip"
+    ],
+    "archive_path": "versions/V152/Windows 1 TClash 迁移.zip",
+    "parts": [
+      "TClash-history-08.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V153",
+    "digest": "5862ef570cc04b8acd4f05087e39ee83fa466fc9aff39228beac8d57b8763131",
+    "bytes": 250293521,
+    "entry_count": 1,
+    "label": "Windows 1 TClash 迁移.zip",
+    "kind": ".zip",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/a-package-previous-y8ns2hrw/Windows 1 TClash 迁移.zip"
+    ],
+    "archive_path": "versions/V153/Windows 1 TClash 迁移.zip",
+    "parts": [
+      "TClash-history-08.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V154",
+    "digest": "ee9fad6d730a6f3ed0c969b444c273568214b6b5ad76de2f5a492e1142c0ec3a",
+    "bytes": 741537368,
+    "entry_count": 18,
+    "label": "Codex 用量.app",
+    "kind": ".app",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/a-repro-check/Codex 用量.app"
+    ],
+    "archive_path": "versions/V154/Codex 用量.app",
+    "parts": [
+      "TClash-history-01.tar.zst.gpg",
+      "TClash-history-03.tar.zst.gpg",
+      "TClash-history-04.tar.zst.gpg",
+      "TClash-history-05.tar.zst.gpg",
+      "TClash-history-06.tar.zst.gpg",
+      "TClash-history-07.tar.zst.gpg",
+      "TClash-history-08.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V155",
+    "digest": "cb68d663b01d796be002362b65cc1ea10690d68045b0e7d4cbea577e342d7b96",
+    "bytes": 37595389,
+    "entry_count": 1,
+    "label": "Codex Usage Mac.zip",
+    "kind": ".zip",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/a-repro-check/installers/Codex Usage Mac.zip"
+    ],
+    "archive_path": "versions/V155/Codex Usage Mac.zip",
+    "parts": [
+      "TClash-history-08.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V156",
+    "digest": "2643214ef9afcaa78a559e847ca6c9ddacfc77e6790123cee8c23ef7d0fe3ab2",
+    "bytes": 37971944,
+    "entry_count": 1,
+    "label": "Codex Usage Mac.zip",
+    "kind": ".zip",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/raw-vs-b-build/Codex Usage Mac.zip"
+    ],
+    "archive_path": "versions/V156/Codex Usage Mac.zip",
+    "parts": [
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V157",
+    "digest": "f035ee160d72b3beb58e2b65d40fbd6f9ab6f9c578d32d5e3a0fc7684ed9b9ba",
+    "bytes": 692877040,
+    "entry_count": 18,
+    "label": "Codex 用量.app",
+    "kind": ".app",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/raw-vs-b-build/Codex 用量.app",
+      "target/device-expansion-20261114/backup/Codex 用量.app"
+    ],
+    "archive_path": "versions/V157/Codex 用量.app",
+    "parts": [
+      "TClash-history-01.tar.zst.gpg",
+      "TClash-history-03.tar.zst.gpg",
+      "TClash-history-04.tar.zst.gpg",
+      "TClash-history-05.tar.zst.gpg",
+      "TClash-history-11.tar.zst.gpg",
+      "TClash-history-12.tar.zst.gpg",
+      "TClash-history-13.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V158",
+    "digest": "97bac5fde87d62ad2ebb73d1fe5e90e5b1d47b183da80567b27fa717e4c2b249",
+    "bytes": 45490795,
+    "entry_count": 9,
+    "label": "Codex 用量.app",
+    "kind": ".app",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/raw-vs-b-build/a/Codex 用量.app"
+    ],
+    "archive_path": "versions/V158/Codex 用量.app",
+    "parts": [
+      "TClash-history-03.tar.zst.gpg",
+      "TClash-history-04.tar.zst.gpg",
+      "TClash-history-05.tar.zst.gpg",
+      "TClash-history-06.tar.zst.gpg",
+      "TClash-history-11.tar.zst.gpg",
+      "TClash-history-13.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V159",
+    "digest": "c9c440815321391549a51cb709ed7707e391cae93e6a7d26e3c0640b9622c559",
+    "bytes": 49482843,
+    "entry_count": 9,
+    "label": "Codex 用量（Intel）.app",
+    "kind": ".app",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/raw-vs-b-build/a/Codex 用量（Intel）.app"
+    ],
+    "archive_path": "versions/V159/Codex 用量（Intel）.app",
+    "parts": [
+      "TClash-history-03.tar.zst.gpg",
+      "TClash-history-04.tar.zst.gpg",
+      "TClash-history-05.tar.zst.gpg",
+      "TClash-history-06.tar.zst.gpg",
+      "TClash-history-11.tar.zst.gpg",
+      "TClash-history-12.tar.zst.gpg",
+      "TClash-history-13.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V160",
+    "digest": "a70122d3c86bfc1698c9684cd608ad05056cc94ee207b8b874db1ab0fc19e192",
+    "bytes": 49727488,
+    "entry_count": 1,
+    "label": "codex-usage-windows-amd64.exe",
+    "kind": ".exe",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/raw-vs-b-build/legacy/codex-usage-windows-amd64.exe"
+    ],
+    "archive_path": "versions/V160/codex-usage-windows-amd64.exe",
+    "parts": [
+      "TClash-history-04.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V161",
+    "digest": "718895395646da4af334b5a2aa8f69b9e258b203b48ea7a74bd202bf4d713dfb",
+    "bytes": 45475840,
+    "entry_count": 1,
+    "label": "codex-usage-windows-arm64.exe",
+    "kind": ".exe",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/raw-vs-b-build/legacy/codex-usage-windows-arm64.exe"
+    ],
+    "archive_path": "versions/V161/codex-usage-windows-arm64.exe",
+    "parts": [
+      "TClash-history-04.tar.zst.gpg",
+      "TClash-history-05.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V162",
+    "digest": "9aab4e486dad7b37ad779810bc93b655cef6855facb0deb95033eabe2c753e98",
+    "bytes": 94986859,
+    "entry_count": 9,
+    "label": "Codex 用量.app",
+    "kind": ".app",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/raw-vs-b-build/legacy-mac/Codex 用量.app"
+    ],
+    "archive_path": "versions/V162/Codex 用量.app",
+    "parts": [
+      "TClash-history-03.tar.zst.gpg",
+      "TClash-history-04.tar.zst.gpg",
+      "TClash-history-05.tar.zst.gpg",
+      "TClash-history-06.tar.zst.gpg",
+      "TClash-history-11.tar.zst.gpg",
+      "TClash-history-12.tar.zst.gpg",
+      "TClash-history-13.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V163",
+    "digest": "6c06e677fe89e94882da1b0d9f856440ba382953f16ffe0ddffabe32e0a53dfa",
+    "bytes": 41836032,
+    "entry_count": 1,
+    "label": "tclash-collector-windows-amd64.exe",
+    "kind": ".exe",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/raw-vs-b-build/sidecars/tclash-collector-windows-amd64.exe",
+      "target/raw-vs-b-build/verify-x64/tclash-collector.exe",
+      "target/device-expansion-20261114/backup/tclash-collector-x86_64-pc-windows-msvc.exe"
+    ],
+    "archive_path": "versions/V163/tclash-collector-windows-amd64.exe",
+    "parts": [
+      "TClash-history-04.tar.zst.gpg",
+      "TClash-history-10.tar.zst.gpg",
+      "TClash-history-13.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V164",
+    "digest": "fdfcddf413c57ecc1f56eb8b70506633ad80e014c788433f7bc4acac398507cd",
+    "bytes": 38133760,
+    "entry_count": 1,
+    "label": "tclash-collector-windows-arm64.exe",
+    "kind": ".exe",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/raw-vs-b-build/sidecars/tclash-collector-windows-arm64.exe",
+      "target/raw-vs-b-build/verify-arm/tclash-collector.exe",
+      "target/device-expansion-20261114/backup/tclash-collector-aarch64-pc-windows-msvc.exe"
+    ],
+    "archive_path": "versions/V164/tclash-collector-windows-arm64.exe",
+    "parts": [
+      "TClash-history-04.tar.zst.gpg",
+      "TClash-history-10.tar.zst.gpg",
+      "TClash-history-13.tar.zst.gpg",
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V165",
+    "digest": "8fab1fe4bd405dfefd5408d0cbe8dc1ebb7d76453c069b93fd82071ac636de41",
+    "bytes": 4577792,
+    "entry_count": 1,
+    "label": "clash-verge-service.exe",
+    "kind": ".exe",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/raw-vs-b-build/verify-arm/clash-verge-service.exe",
+      "target/device-expansion-20261114/backup/clash-verge-service.exe"
+    ],
+    "archive_path": "versions/V165/clash-verge-service.exe",
+    "parts": [
+      "TClash-history-11.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V166",
+    "digest": "8a9147975386c66b9c398a4e008261aa6698a7e0d5ce991f21efac1b9616211f",
+    "bytes": 5147648,
+    "entry_count": 1,
+    "label": "clash-verge-service.exe",
+    "kind": ".exe",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/raw-vs-b-build/verify-x64/clash-verge-service.exe"
+    ],
+    "archive_path": "versions/V166/clash-verge-service.exe",
+    "parts": [
+      "TClash-history-18.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V167",
+    "digest": "77fa3a40d263e6fb3839ed246eafad1a2ea0165eb026d683162518813a309188",
+    "bytes": 1446912,
+    "entry_count": 1,
+    "label": "clash-verge-service-install.exe",
+    "kind": ".exe",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/device-expansion-20261114/backup/clash-verge-service-install.exe"
+    ],
+    "archive_path": "versions/V167/clash-verge-service-install.exe",
+    "parts": [
+      "TClash-history-11.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
+  },
+  {
+    "id": "V168",
+    "digest": "0180215881d088c49509dfb8b678c64d74b54b9cec0f2174e274b7a6db8f032e",
+    "bytes": 603648,
+    "entry_count": 1,
+    "label": "clash-verge-service-uninstall.exe",
+    "kind": ".exe",
+    "categories": [
+      "补充历史制品"
+    ],
+    "origins": [
+      "target/device-expansion-20261114/backup/clash-verge-service-uninstall.exe"
+    ],
+    "archive_path": "versions/V168/clash-verge-service-uninstall.exe",
+    "parts": [
+      "TClash-history-11.tar.zst.gpg"
+    ],
+    "index": "TClash-history-supplement.tar.zst.gpg"
   }
 ]

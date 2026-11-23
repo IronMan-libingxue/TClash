@@ -16,6 +16,7 @@ import tarfile
 import tempfile
 
 INDEX_ASSET = 'TClash-history-index.tar.zst.gpg'
+SUPPLEMENT_ASSET = 'TClash-history-supplement.tar.zst.gpg'
 DIGEST = re.compile(r'[0-9a-f]{64}')
 PACK = re.compile(r'TClash-history-[0-9]+\.tar\.zst\.gpg')
 
@@ -56,8 +57,8 @@ def safe_relative(name):
     return path
 
 
-def read_index(assets, key, home):
-    with read_archive(assets / INDEX_ASSET, key, home) as archive:
+def read_index(assets, key, home, index):
+    with read_archive(assets / index, key, home) as archive:
         member = archive.next()
         if member is None or member.name != 'archive-manifest.json' or not member.isfile():
             raise ValueError('历史目录格式错误')
@@ -148,6 +149,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--assets', required=True, type=pathlib.Path, help='保存加密附件的目录')
     parser.add_argument('--key', required=True, type=pathlib.Path, help='本机保存的恢复密钥文件')
+    parser.add_argument(
+        '--index', choices=(INDEX_ASSET, SUPPLEMENT_ASSET), default=INDEX_ASSET,
+        help='选择主目录或补充目录的加密索引',
+    )
     parser.add_argument('--version', help='历史制品编号，例如 V007')
     parser.add_argument('--output', type=pathlib.Path, help='还原到单独目录')
     args = parser.parse_args()
@@ -159,7 +164,7 @@ def main():
     os.umask(0o077)
     try:
         with tempfile.TemporaryDirectory(prefix='tca-recover-', dir='/tmp') as home:
-            manifest = read_index(args.assets, args.key, home)
+            manifest = read_index(args.assets, args.key, home, args.index)
             if not args.version:
                 for version in manifest['versions']:
                     print(version['id'], version['origins'][0])
