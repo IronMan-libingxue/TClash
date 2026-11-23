@@ -1,0 +1,16 @@
+.DS_Store
+**/node_modules/
+**/.dart_tool/
+**/.toolchain/
+**/target/
+**/dist/
+*.log
+.env
+.env.*
+!.env.example
+tracker.json
+auth.json
+*.p12
+*.pfx
+*.age
+*.gpg
