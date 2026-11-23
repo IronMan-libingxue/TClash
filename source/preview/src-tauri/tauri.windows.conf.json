@@ -1,0 +1,34 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "identifier": "local.tclash.preview",
+  "mainBinaryName": "tclash-preview",
+  "bundle": {
+    "targets": ["nsis"],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "webviewInstallMode": {
+        "type": "embedBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "compression": "zlib",
+        "displayLanguageSelector": true,
+        "installerIcon": "icons/icon.ico",
+        "languages": ["SimpChinese", "English", "Russian"],
+        "installMode": "currentUser"
+      }
+    }
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "capabilities": [
+        "desktop-capability",
+        "desktop-windows-capability",
+        "migrated"
+      ]
+    }
+  }
+}
