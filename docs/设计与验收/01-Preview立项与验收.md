@@ -81,7 +81,7 @@ TClash Preview（简称 TClash）以 Clash Verge Rev 为基础，在完整代理
 - 安装时将 Clash 订阅链接默认交给 TClash。方案应记录原默认处理方式，提供恢复方法，并验证卸载或改回默认后原版仍可使用。系统对默认应用切换若要求用户确认，按系统界面完成。
 - 两个应用可分别安装，但同时占用相同代理端口、系统代理或 TUN 时需要冲突提示和明确的控制归属。验收中不得静默覆盖正在使用的配置。
 - 首版手动安装更新，移除原版应用自动更新入口的直接覆盖路径，界面明确显示手动更新。后续如恢复自动更新，使用 TClash 独立的发布地址和签名。
-- Clash Verge Rev 采用 GPL-3.0-only，现有 Magpie 基础代码采用 MIT。分发时保留对应许可、版权和修改说明，并按适用许可提供源码及第三方声明。[Clash Verge Rev 许可](https://github.com/clash-verge-rev/clash-verge-rev/blob/v2.5.10/LICENSE)、[现有 Magpie 许可](../codex-usage-tracker/LICENSE)
+- Clash Verge Rev 采用 GPL-3.0-only，现有 Magpie 基础代码采用 MIT。分发时保留对应许可、版权和修改说明，并按适用许可提供源码及第三方声明。[Clash Verge Rev 许可](https://github.com/clash-verge-rev/clash-verge-rev/blob/v2.5.10/LICENSE)、[现有 Magpie 许可](../../source/usage-tracker-early/LICENSE)
 
 ## 六、实施阶段与验收标准
 
