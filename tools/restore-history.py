@@ -21,14 +21,30 @@ DIGEST = re.compile(r'[0-9a-f]{64}')
 PACK = re.compile(r'TClash-history-[0-9]+\.tar\.zst\.gpg')
 
 
+def pack_sources(path):
+    if path.is_file():
+        return [path]
+    parts = sorted(path.parent.glob(path.name + '.part[0-9][0-9]'))
+    if parts and parts == [path.with_name(f'{path.name}.part{i:02}') for i in range(1, len(parts)+1)]:
+        return parts
+    return []
+
+
 @contextlib.contextmanager
 def read_archive(path, key, home):
-    decrypt = subprocess.Popen(
-        ['gpg', '--no-options', '--homedir', str(home), '--batch', '--no-tty',
-         '--quiet', '--pinentry-mode', 'loopback', '--no-symkey-cache',
-         '--passphrase-file', str(key), '--decrypt', str(path)],
-        stdout=subprocess.PIPE,
-    )
+    parts = pack_sources(path)
+    if not parts:
+        raise ValueError(f'缺少加密分卷：{path.name}')
+    gpg = ['gpg', '--no-options', '--homedir', str(home), '--batch', '--no-tty',
+           '--quiet', '--pinentry-mode', 'loopback', '--no-symkey-cache',
+           '--passphrase-file', str(key), '--decrypt']
+    join = None
+    if parts == [path]:
+        decrypt = subprocess.Popen([*gpg, str(path)], stdout=subprocess.PIPE)
+    else:
+        join = subprocess.Popen(['cat', *map(str, parts)], stdout=subprocess.PIPE)
+        decrypt = subprocess.Popen(gpg, stdin=join.stdout, stdout=subprocess.PIPE)
+        join.stdout.close()
     decompress = subprocess.Popen(
         ['zstd', '-q', '-d', '-c'], stdin=decrypt.stdout, stdout=subprocess.PIPE,
     )
@@ -40,11 +56,13 @@ def read_archive(path, key, home):
             pass
         decompress_status = decompress.wait()
         decrypt_status = decrypt.wait()
-        if decompress_status or decrypt_status:
+        if decompress_status or decrypt_status or (join and join.wait()):
             raise ValueError(f'解密校验失败：{path.name}')
     finally:
         decompress.stdout.close()
-        for process in (decompress, decrypt):
+        for process in (decompress, decrypt, join):
+            if process is None:
+                continue
             if process.poll() is None:
                 process.terminate()
             process.wait()
@@ -81,7 +99,7 @@ def collect_chunks(assets, key, home, manifest, version, spool):
             if not DIGEST.fullmatch(chunk) or not PACK.fullmatch(pack):
                 raise ValueError('历史目录中有无效的文件分卷')
             by_pack[pack].add(chunk)
-    missing = [name for name in by_pack if not (assets / name).is_file()]
+    missing = [name for name in by_pack if not pack_sources(assets / name)]
     if missing:
         raise ValueError('缺少分卷 ' + ', '.join(missing))
     for pack, expected in sorted(by_pack.items()):
