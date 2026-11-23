@@ -1,0 +1,610 @@
+{
+  "installers": {
+    "v2.5.11": [
+      {
+        "name": "SHA256SUMS.txt",
+        "bytes": 323,
+        "sha256": "35b65a10ebc74bab6b071593da2165229405e24b6e3971f24d4bf49fd4e9a776"
+      },
+      {
+        "name": "TClash-2.5.11-Windows-x64-Setup.exe",
+        "bytes": 55426080,
+        "sha256": "1dfbbd1158d3d9db7a5bf14e16149451423a42146e071444914970ea67c78e2e"
+      },
+      {
+        "name": "TClash-2.5.11-macOS-AppleSilicon-Acceptance.pkg",
+        "bytes": 92869148,
+        "sha256": "d00d60c1e77978c0da6582d22e5bc52424d3fb17e59641eaf43ff7952e2210a4"
+      },
+      {
+        "name": "TClash-2.5.11-macOS-Intel-Acceptance.pkg",
+        "bytes": 96317227,
+        "sha256": "da8dc83adedd280bc5a2fd1c546c3a3666fe5fed301e47fe6c4d6acadf30df45"
+      }
+    ],
+    "v2.5.12": [
+      {
+        "name": "SHA256SUMS.txt",
+        "bytes": 301,
+        "sha256": "2f2867ab552cd0b230462b87532d1f738535dcced91f4636d31e40bb4bb98a92"
+      },
+      {
+        "name": "TClash-2.5.12-Windows-x64-Setup.exe",
+        "bytes": 55432735,
+        "sha256": "d8d829f0f9a30e7668c0de113067d6e64fdf418fab0e739a0e48af9434ddbd0c"
+      },
+      {
+        "name": "TClash-2.5.12-macOS-AppleSilicon.pkg",
+        "bytes": 75678213,
+        "sha256": "ab260c7f4818bc04dd14e57372d356e0439144e48f83c730d234b1352297f467"
+      },
+      {
+        "name": "TClash-2.5.12-macOS-Intel.pkg",
+        "bytes": 80587893,
+        "sha256": "690bf4933b88e7b3bbc11016d377ebf98365ca33e636b7aca68482cdc8028955"
+      }
+    ]
+  },
+  "archive": {
+    "TClash-history-01.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-01.tar.zst.gpg",
+        "bytes": 643165946,
+        "sha256": "b98694a8ac9eaeafb88127ff2e4c02417595d42ab8fe17c19cb364ccd0f74e47"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-01.tar.zst.gpg.part01",
+          "bytes": 67108864,
+          "sha256": "4fd7f6b5df0907108a33d93dfd6e9d54bad775810a3628c733b4fbc9e87d2384"
+        },
+        {
+          "name": "TClash-history-01.tar.zst.gpg.part02",
+          "bytes": 67108864,
+          "sha256": "0eb1c8c78a74fdffb85dbbe7fa54afafa9f5589d88404ee6eda046dd166eeb9b"
+        },
+        {
+          "name": "TClash-history-01.tar.zst.gpg.part03",
+          "bytes": 67108864,
+          "sha256": "15f921e4959a21fee0396b77f2df31cadad1b122ea8ea74b436728c020ea23a0"
+        },
+        {
+          "name": "TClash-history-01.tar.zst.gpg.part04",
+          "bytes": 67108864,
+          "sha256": "579b0df95eb91a273a55e4c24c09c0eb899a91478f7d3f9ac91c26ae65bc3e5f"
+        },
+        {
+          "name": "TClash-history-01.tar.zst.gpg.part05",
+          "bytes": 67108864,
+          "sha256": "fe040a907368c841dfa3edfe5bc471a0b8c6cf9755f165422e2b59c2a65826ab"
+        },
+        {
+          "name": "TClash-history-01.tar.zst.gpg.part06",
+          "bytes": 67108864,
+          "sha256": "dcee797254a3e3894bfd02fdbd5f44363af82924f7db34fce27a5e663447e65b"
+        },
+        {
+          "name": "TClash-history-01.tar.zst.gpg.part07",
+          "bytes": 67108864,
+          "sha256": "cd8b54e85d226b0dc6764443720b709d41181b60b6709e8ef607077a5694755c"
+        },
+        {
+          "name": "TClash-history-01.tar.zst.gpg.part08",
+          "bytes": 67108864,
+          "sha256": "b568a870194603416f66638bcedd54b4f22c04e427965b1a5e14363980e79392"
+        },
+        {
+          "name": "TClash-history-01.tar.zst.gpg.part09",
+          "bytes": 67108864,
+          "sha256": "d8b74d51ed3e1258bd8d576ad01d6f0ca1c900ac422c8ce80436ab94b22fcfc2"
+        },
+        {
+          "name": "TClash-history-01.tar.zst.gpg.part10",
+          "bytes": 39186170,
+          "sha256": "81ecd7a6b136a68c2d16cf7ea18002fab18bb8b705db8e89c76083e187645b6c"
+        }
+      ]
+    },
+    "TClash-history-02.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-02.tar.zst.gpg",
+        "bytes": 642403983,
+        "sha256": "749ef102ac983d6b7f2e49fbabe7775689e8e99c9f2d11c75d5f2a30632428c4"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-02.tar.zst.gpg",
+          "bytes": 642403983,
+          "sha256": "749ef102ac983d6b7f2e49fbabe7775689e8e99c9f2d11c75d5f2a30632428c4"
+        }
+      ]
+    },
+    "TClash-history-03.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-03.tar.zst.gpg",
+        "bytes": 464545144,
+        "sha256": "e5f7d1a9e16418f295e8b442b6d98277c61d55f30ff2f2b025be0f80410da0b7"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-03.tar.zst.gpg",
+          "bytes": 464545144,
+          "sha256": "e5f7d1a9e16418f295e8b442b6d98277c61d55f30ff2f2b025be0f80410da0b7"
+        }
+      ]
+    },
+    "TClash-history-04.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-04.tar.zst.gpg",
+        "bytes": 496530509,
+        "sha256": "423a4106e2adaea523e48a670e6f65d2f3f8add1e5b6436bd55b356bbb6d5dd4"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-04.tar.zst.gpg",
+          "bytes": 496530509,
+          "sha256": "423a4106e2adaea523e48a670e6f65d2f3f8add1e5b6436bd55b356bbb6d5dd4"
+        }
+      ]
+    },
+    "TClash-history-05.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-05.tar.zst.gpg",
+        "bytes": 291884400,
+        "sha256": "271fd7ede478c0600c9c26cd1efaa64de50df14085625a1a4daa516d9bdf375f"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-05.tar.zst.gpg",
+          "bytes": 291884400,
+          "sha256": "271fd7ede478c0600c9c26cd1efaa64de50df14085625a1a4daa516d9bdf375f"
+        }
+      ]
+    },
+    "TClash-history-06.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-06.tar.zst.gpg",
+        "bytes": 265374428,
+        "sha256": "de6eeef34587d28f452943685dc57c4e1d07929da149ad679d8ae4e9b164988e"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-06.tar.zst.gpg",
+          "bytes": 265374428,
+          "sha256": "de6eeef34587d28f452943685dc57c4e1d07929da149ad679d8ae4e9b164988e"
+        }
+      ]
+    },
+    "TClash-history-07.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-07.tar.zst.gpg",
+        "bytes": 443645723,
+        "sha256": "6a25ca9e516c53bfbe7c6fe469e02ccdf15e10c833371af0ca0d2172987f5741"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-07.tar.zst.gpg.part01",
+          "bytes": 67108864,
+          "sha256": "4bec43b342d5fdeee10269441460604a7d8051a31f976deb2aa7868868a2d5b9"
+        },
+        {
+          "name": "TClash-history-07.tar.zst.gpg.part02",
+          "bytes": 67108864,
+          "sha256": "20641e0dbbee7ad6fe469d67819c21635a9dcf5212b7078c78d04abf0fe27714"
+        },
+        {
+          "name": "TClash-history-07.tar.zst.gpg.part03",
+          "bytes": 67108864,
+          "sha256": "1c0abeddbe16015ae555a4db8ac2200758f58f8a295006e2f2d5dabbc7a4173e"
+        },
+        {
+          "name": "TClash-history-07.tar.zst.gpg.part04",
+          "bytes": 67108864,
+          "sha256": "4ed427aba3e7b1d73228f666f573962c831b2e547e96ea8ea5daf07e44ee0908"
+        },
+        {
+          "name": "TClash-history-07.tar.zst.gpg.part05",
+          "bytes": 67108864,
+          "sha256": "3626a4df03e8900955c56b19aba96ecf6f183c9c05558b05ee42bffc4eb0cb3a"
+        },
+        {
+          "name": "TClash-history-07.tar.zst.gpg.part06",
+          "bytes": 67108864,
+          "sha256": "2592b6d682484ef33abb770f6b434ece1839745c0281cbe91eb85f9733ac41d4"
+        },
+        {
+          "name": "TClash-history-07.tar.zst.gpg.part07",
+          "bytes": 40992539,
+          "sha256": "aea0f92ad6777b8759c8b98446add14d3a7b0aede4335e2596c931daed524fc0"
+        }
+      ]
+    },
+    "TClash-history-08.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-08.tar.zst.gpg",
+        "bytes": 504268888,
+        "sha256": "d9b0cad85c287c371d1a8ef8981b79a0b192ec21a245923e5414304d2dd00971"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-08.tar.zst.gpg.part01",
+          "bytes": 67108864,
+          "sha256": "6aea413c049951a7ef1d76a297d90601e1a78e6bb8234efd307d386258306be0"
+        },
+        {
+          "name": "TClash-history-08.tar.zst.gpg.part02",
+          "bytes": 67108864,
+          "sha256": "d71c57233b36cbc054b0453de508c38c0547e42997b5e3c51914ff79ecd93edb"
+        },
+        {
+          "name": "TClash-history-08.tar.zst.gpg.part03",
+          "bytes": 67108864,
+          "sha256": "1b42a9bb58db9b0a1db089107527f39f845308a652ab6b7badd6f88e2009ddcc"
+        },
+        {
+          "name": "TClash-history-08.tar.zst.gpg.part04",
+          "bytes": 67108864,
+          "sha256": "77c6c166def2aa3d5cc7cfb997a6f8af76cd8da560b0cfd8e5f531c1e7cd1d9c"
+        },
+        {
+          "name": "TClash-history-08.tar.zst.gpg.part05",
+          "bytes": 67108864,
+          "sha256": "0fc03614f55dc3d5f039bd8657c50f030ddb86adba8188a836c8c94fb6d8d402"
+        },
+        {
+          "name": "TClash-history-08.tar.zst.gpg.part06",
+          "bytes": 67108864,
+          "sha256": "a737550490e6e85f74f9303d5781d06add79267a3c0dcb26e901fd2d5580be42"
+        },
+        {
+          "name": "TClash-history-08.tar.zst.gpg.part07",
+          "bytes": 67108864,
+          "sha256": "f54de446357fa88572fc716cb6ff9e65b8ce6c0a0a7026bc8e251a5ce3e9b46b"
+        },
+        {
+          "name": "TClash-history-08.tar.zst.gpg.part08",
+          "bytes": 34506840,
+          "sha256": "c8ef98f8be24281e7a74621aafd4e543dce1c940167da3f39663988cacef5666"
+        }
+      ]
+    },
+    "TClash-history-09.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-09.tar.zst.gpg",
+        "bytes": 459545621,
+        "sha256": "ac4236122b52c63903d28a9656a9f8e17448e16835327b3d43f630e7add010f8"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-09.tar.zst.gpg.part01",
+          "bytes": 67108864,
+          "sha256": "c0de79a2da48308ce4981a9beae656fcd59c434c4df15e8473685ee94a797710"
+        },
+        {
+          "name": "TClash-history-09.tar.zst.gpg.part02",
+          "bytes": 67108864,
+          "sha256": "98df08327634de2428192eae763c945a45ffc5cecc70318e5ef98b4532a53412"
+        },
+        {
+          "name": "TClash-history-09.tar.zst.gpg.part03",
+          "bytes": 67108864,
+          "sha256": "de5a6d98779e1f430e1d2f6ce6c3ec36ae9a154e06d947dc412026e2e18632c3"
+        },
+        {
+          "name": "TClash-history-09.tar.zst.gpg.part04",
+          "bytes": 67108864,
+          "sha256": "a522b7285aac9702651731193ca83cbb23c83ca8f34a68786d4162566ddc8306"
+        },
+        {
+          "name": "TClash-history-09.tar.zst.gpg.part05",
+          "bytes": 67108864,
+          "sha256": "ff5a9eb7aadbad2103ec34fa522d3c4a8bbdfadf40c40590a213db578f4c25e8"
+        },
+        {
+          "name": "TClash-history-09.tar.zst.gpg.part06",
+          "bytes": 67108864,
+          "sha256": "e07de5764a9e71367c8181effe2a6f68e9cef52b927b7a3b0b15c15d6d8f38b7"
+        },
+        {
+          "name": "TClash-history-09.tar.zst.gpg.part07",
+          "bytes": 56892437,
+          "sha256": "7014ed4b67097535f6b44840a29da05617a87aa7140e77b7d0451c521812b4f9"
+        }
+      ]
+    },
+    "TClash-history-10.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-10.tar.zst.gpg",
+        "bytes": 192140498,
+        "sha256": "8e3dad684a7fd1df580cd144379f840acf96a356a0e2593f9232d08f558ac95e"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-10.tar.zst.gpg.part01",
+          "bytes": 67108864,
+          "sha256": "bd6eb8d64c9c13db3b6dfc07a872907bc171f1010d5074d98654ad73b9fc606a"
+        },
+        {
+          "name": "TClash-history-10.tar.zst.gpg.part02",
+          "bytes": 67108864,
+          "sha256": "2640f05c9059b4c621c4ce906465ad768040dfbea64e1ce86296ff7bb3efaf61"
+        },
+        {
+          "name": "TClash-history-10.tar.zst.gpg.part03",
+          "bytes": 57922770,
+          "sha256": "31e3b79d458a51af89fd9f6d4d1f390ceca74d5135ae16ace02cf89656ce6a0c"
+        }
+      ]
+    },
+    "TClash-history-11.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-11.tar.zst.gpg",
+        "bytes": 416459323,
+        "sha256": "662d18d0fb70e699acea07b5c0601c2997ab3ee3bcb8afb174984f34be4d6e42"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-11.tar.zst.gpg.part01",
+          "bytes": 67108864,
+          "sha256": "97493da08a813adeae2e378e7003903f16aa41802b6763ee2260a128be1579b3"
+        },
+        {
+          "name": "TClash-history-11.tar.zst.gpg.part02",
+          "bytes": 67108864,
+          "sha256": "976fa6d6df9074869d0b17276852bb8f70ec6beebdb851ba6d9414e926b37b4c"
+        },
+        {
+          "name": "TClash-history-11.tar.zst.gpg.part03",
+          "bytes": 67108864,
+          "sha256": "57be9a3017849a12a5ca520bd214aec7271127f1a10054e47bb7214b482c3b1b"
+        },
+        {
+          "name": "TClash-history-11.tar.zst.gpg.part04",
+          "bytes": 67108864,
+          "sha256": "d132a731f2623e353129dae84a9c8693a4bdf684cc204121278e78e26f2266d9"
+        },
+        {
+          "name": "TClash-history-11.tar.zst.gpg.part05",
+          "bytes": 67108864,
+          "sha256": "e7a231bb5e753789180d9c78df8b2e8135260aaa7d138f2ea7c9eed17d30125a"
+        },
+        {
+          "name": "TClash-history-11.tar.zst.gpg.part06",
+          "bytes": 67108864,
+          "sha256": "a655cceb7a5816d59c6a6b30678fd1cc22ee0562604eab293aa1f1ebc7044f27"
+        },
+        {
+          "name": "TClash-history-11.tar.zst.gpg.part07",
+          "bytes": 13806139,
+          "sha256": "e0a705c461edc08fa8891e4c7e511acd801db832643af54412246d1957256241"
+        }
+      ]
+    },
+    "TClash-history-12.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-12.tar.zst.gpg",
+        "bytes": 285505764,
+        "sha256": "3c91473343c732f04f42706b351b7c5871e563021c9549158aae444af608b57d"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-12.tar.zst.gpg",
+          "bytes": 285505764,
+          "sha256": "3c91473343c732f04f42706b351b7c5871e563021c9549158aae444af608b57d"
+        }
+      ]
+    },
+    "TClash-history-13.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-13.tar.zst.gpg",
+        "bytes": 522529149,
+        "sha256": "fd149950a3433ea2eb53450338331cba6e85dd64fbcbf3c4f702bd415f82d229"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-13.tar.zst.gpg.part01",
+          "bytes": 67108864,
+          "sha256": "c7c56e497d050e07a3262f4d2020a6c28a76a2ef994bb4d25c6936df30066d4d"
+        },
+        {
+          "name": "TClash-history-13.tar.zst.gpg.part02",
+          "bytes": 67108864,
+          "sha256": "8e9bf54cac3fd8b2b9f1b8c6d150ae48d0f15e62a90b600a05d3d90ffe502755"
+        },
+        {
+          "name": "TClash-history-13.tar.zst.gpg.part03",
+          "bytes": 67108864,
+          "sha256": "6c931e0eec1ea8a03fc275207f29617025aba405ed667c8ae5fc5644d180e01c"
+        },
+        {
+          "name": "TClash-history-13.tar.zst.gpg.part04",
+          "bytes": 67108864,
+          "sha256": "a06bcfa6172d81072b50b07a13404d8e4dbeca74f3823d4cf5072f3b80a51f9a"
+        },
+        {
+          "name": "TClash-history-13.tar.zst.gpg.part05",
+          "bytes": 67108864,
+          "sha256": "dc8bbbfc4e2d4b9271a91ea7055ba0cade101dddd9564ea8d94f89f168fe24f9"
+        },
+        {
+          "name": "TClash-history-13.tar.zst.gpg.part06",
+          "bytes": 67108864,
+          "sha256": "dfa117fbf2eca6b0cd5489f04bef33e3cafdbe1f9e82c1af0ea83682e36d8e19"
+        },
+        {
+          "name": "TClash-history-13.tar.zst.gpg.part07",
+          "bytes": 67108864,
+          "sha256": "6664ece1a95a6c61919ef3ec3ebad069ec0b04c90b6447e145adfe36a26cc676"
+        },
+        {
+          "name": "TClash-history-13.tar.zst.gpg.part08",
+          "bytes": 52767101,
+          "sha256": "5faa4c1f4879572c73a79a1b422c2ede15e5348d68959d76915c77721afecd70"
+        }
+      ]
+    },
+    "TClash-history-14.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-14.tar.zst.gpg",
+        "bytes": 501957291,
+        "sha256": "bca415089cd4d061c52ff8c4e2b6fc832cb59d5317790d7a05f0bf551fff4ab5"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-14.tar.zst.gpg.part01",
+          "bytes": 67108864,
+          "sha256": "8efeef56538aec3f8a3da45bd336f38a21e59a2743bb6d89b741bc3a7c9c2d58"
+        },
+        {
+          "name": "TClash-history-14.tar.zst.gpg.part02",
+          "bytes": 67108864,
+          "sha256": "7fbf44754e6d85b39d3340005cdd41d2181f106db12793453278712f32469c65"
+        },
+        {
+          "name": "TClash-history-14.tar.zst.gpg.part03",
+          "bytes": 67108864,
+          "sha256": "31ef6a1e459772929ece88dd33e196d74764569d0b5c5e18e1c249deeb7f98b7"
+        },
+        {
+          "name": "TClash-history-14.tar.zst.gpg.part04",
+          "bytes": 67108864,
+          "sha256": "ced5ba67be71433a28a862a545e3470a4a7bdb829159b78586c7afbd7988698d"
+        },
+        {
+          "name": "TClash-history-14.tar.zst.gpg.part05",
+          "bytes": 67108864,
+          "sha256": "d02c65451daf2c8f8ec9972a463e1728538845afa3cf04b3f66709f169a47d11"
+        },
+        {
+          "name": "TClash-history-14.tar.zst.gpg.part06",
+          "bytes": 67108864,
+          "sha256": "c1bf3e3db29a9c2a1d9dfec8cb8f31e35093ab99465c0215844e27630a9f808e"
+        },
+        {
+          "name": "TClash-history-14.tar.zst.gpg.part07",
+          "bytes": 67108864,
+          "sha256": "7b60e54e21c07b79465cefb18efdcd6e171e4acba2f6da480001c2c90be3c2b4"
+        },
+        {
+          "name": "TClash-history-14.tar.zst.gpg.part08",
+          "bytes": 32195243,
+          "sha256": "9a302543eb3a959f41ece5c047c58e2964058bc895cdb04124e564c992154dfb"
+        }
+      ]
+    },
+    "TClash-history-15.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-15.tar.zst.gpg",
+        "bytes": 259037264,
+        "sha256": "b49955ed7536e8266e72bf7fa5d8b8e2487c20a877bd450bddcd9da2d88ed68b"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-15.tar.zst.gpg",
+          "bytes": 259037264,
+          "sha256": "b49955ed7536e8266e72bf7fa5d8b8e2487c20a877bd450bddcd9da2d88ed68b"
+        }
+      ]
+    },
+    "TClash-history-16.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-16.tar.zst.gpg",
+        "bytes": 444722980,
+        "sha256": "a2ff0c8a2664c644ed8a2d16c1c4cf7b5c418739d1be581361c773baeafc41e1"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-16.tar.zst.gpg.part01",
+          "bytes": 67108864,
+          "sha256": "20b82645b3dc3d5d1a33effa07a2f7db693c92bc8d5ff75cf0a208ceb7c1ec32"
+        },
+        {
+          "name": "TClash-history-16.tar.zst.gpg.part02",
+          "bytes": 67108864,
+          "sha256": "e29b13cf7eebd7cefc431a312ac3d583b063f7735e92c42e8725493acb2024f8"
+        },
+        {
+          "name": "TClash-history-16.tar.zst.gpg.part03",
+          "bytes": 67108864,
+          "sha256": "f584b467b9b446e6d8f6551619eeab9508de9cb9c27f6d2936adced8764bcf38"
+        },
+        {
+          "name": "TClash-history-16.tar.zst.gpg.part04",
+          "bytes": 67108864,
+          "sha256": "6c9a808750b38c63f960d9cc10cee2efd69ad0bb44bcb8acc8fc0b00b371d1ce"
+        },
+        {
+          "name": "TClash-history-16.tar.zst.gpg.part05",
+          "bytes": 67108864,
+          "sha256": "15b7bce61290679542071be6b33cdf6b58b907a328e9682a466074ef18d15fd0"
+        },
+        {
+          "name": "TClash-history-16.tar.zst.gpg.part06",
+          "bytes": 67108864,
+          "sha256": "26ebe0ed9903e3272f35ce104b61972d7b81eb89b0d1b630e2ad94f578f40d8a"
+        },
+        {
+          "name": "TClash-history-16.tar.zst.gpg.part07",
+          "bytes": 42069796,
+          "sha256": "f7ca933e2768820b798fb486c312e04eddfe33184040ffaea0bc9d7d8f0b3c36"
+        }
+      ]
+    },
+    "TClash-history-17.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-17.tar.zst.gpg",
+        "bytes": 59837739,
+        "sha256": "5784a89c6f662a7ee3fe18d25174acf6a0cc5c0c799f683f52859fc6c0bbeb01"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-17.tar.zst.gpg",
+          "bytes": 59837739,
+          "sha256": "5784a89c6f662a7ee3fe18d25174acf6a0cc5c0c799f683f52859fc6c0bbeb01"
+        }
+      ]
+    },
+    "TClash-history-index.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-index.tar.zst.gpg",
+        "bytes": 1174519,
+        "sha256": "1db5e3ea3121d641829c8aed565058808b84a408cf79f4158e2c88de31098ec8"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-index.tar.zst.gpg",
+          "bytes": 1174519,
+          "sha256": "1db5e3ea3121d641829c8aed565058808b84a408cf79f4158e2c88de31098ec8"
+        }
+      ]
+    },
+    "TClash-history-18.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-18.tar.zst.gpg",
+        "bytes": 106348154,
+        "sha256": "c47f67212c41f91ef5ab2ac37436c2090ef217b809a2fd57cc2a71dec5ad282c"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-18.tar.zst.gpg",
+          "bytes": 106348154,
+          "sha256": "c47f67212c41f91ef5ab2ac37436c2090ef217b809a2fd57cc2a71dec5ad282c"
+        }
+      ]
+    },
+    "TClash-history-supplement.tar.zst.gpg": {
+      "content": {
+        "name": "TClash-history-supplement.tar.zst.gpg",
+        "bytes": 93131,
+        "sha256": "1adf1086e6a2685afecef90f80f82c5fd0e262a855d91cf1ccf92e69535b168b"
+      },
+      "uploaded": [
+        {
+          "name": "TClash-history-supplement.tar.zst.gpg",
+          "bytes": 93131,
+          "sha256": "1adf1086e6a2685afecef90f80f82c5fd0e262a855d91cf1ccf92e69535b168b"
+        }
+      ]
+    }
+  }
+}
