@@ -99,7 +99,7 @@ func (a *App) InstallDeployment(path string) error {
 			_ = os.Rename(filepath.Join(a.dir, name+".fresh-staging"), filepath.Join(a.dir, name))
 		}
 	}
-	for _, name := range []string{"activity-history.json", "traffic-ledger.json", "shared-telemetry.json"} {
+	for _, name := range []string{"activity-history.json", "traffic-ledger.json", "shared-telemetry.json", localHistoryFile} {
 		path := filepath.Join(a.dir, name)
 		if _, err := os.Stat(path + ".fresh-staging"); err == nil {
 			restore()

@@ -198,13 +198,15 @@ func readLocalTelemetry() *Telemetry {
 	if err != nil {
 		return nil
 	}
-	data, err := os.ReadFile(filepath.Join(root, "TClash Preview", "collector", "shared-telemetry.json"))
-	if err != nil || len(data) > 8<<20 {
-		return nil
+	for _, dir := range []string{DesktopCollectorDir(root), filepath.Join(root, "TClash Preview", "collector")} {
+		data, err := os.ReadFile(filepath.Join(dir, "shared-telemetry.json"))
+		if err != nil || len(data) > 8<<20 {
+			continue
+		}
+		var value Telemetry
+		if json.Unmarshal(data, &value) == nil && value.Version == 1 {
+			return &value
+		}
 	}
-	var value Telemetry
-	if json.Unmarshal(data, &value) != nil || value.Version != 1 {
-		return nil
-	}
-	return &value
+	return nil
 }

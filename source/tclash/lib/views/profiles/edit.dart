@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/tclash_profile.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/features/form/form.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -38,6 +39,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
   final _fileInfoNotifier = ValueNotifier<FileInfo?>(null);
   late SetupAction _setupAction;
   Uint8List? _fileData;
+  TClashProfilePackage? _uploadedPackage;
 
   @override
   void initState() {
@@ -151,17 +153,25 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
           profile = profile.copyWith(autoUpdate: false);
         }
       }
-      final savedProfile = await globalState.safeRun(
-        () => profile.saveFile(
+      final uploaded = _uploadedPackage;
+      final savedProfile = await globalState.safeRun(() {
+        if (uploaded != null) {
+          return profilesAction.saveLocalPackage(
+            profile,
+            uploaded,
+            edited: _fileData,
+          );
+        }
+        return profile.saveFile(
           _fileData!,
           validate: (path, key) =>
               ref.read(coreHandlerProvider).validateProfile(path, key),
-        ),
-      );
+        );
+      });
       if (savedProfile == null) {
         return;
       }
-      profilesAction.putProfile(savedProfile);
+      if (uploaded == null) profilesAction.putProfile(savedProfile);
     } else if (!hasUpdate) {
       profilesAction.putProfile(profile);
     } else {
@@ -255,14 +265,22 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
   }
 
   Future<void> _uploadProfileFile() async {
-    final platformFile = await globalState.safeRun(picker.pickerFile);
+    final platformFile = await globalState.safeRun(picker.pickTClashProfile);
     if (platformFile == null) return;
-    final fileData = await platformFile.readBytes();
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
+    final action = ref.read(profilesActionProvider.notifier);
+    final package = await globalState.safeRun(() async {
+      final package = await action.readLocalPackage(
+        platformFile.name,
+        platformFile.readAsByteStream,
+      );
+      await action.localPackageConfig(package);
+      return package;
+    });
+    if (package == null || !mounted) return;
     setState(() {
-      _fileData = fileData;
+      _uploadedPackage = package;
+      _fileData = _editedData = package.config;
     });
     _fileInfoNotifier.value = _fileInfoNotifier.value?.copyWith(
       size: _fileData?.length ?? 0,

@@ -844,6 +844,7 @@
   "failedItem": "{label}: {message}",
   "failedCount": "{count} elementos fallaron. Toca para ver",
   "importConfigInvalid": "Este archivo no es una configuración importable",
+  "tclashProfileInvalid": "Selecciona un archivo de configuración .tclash válido exportado por TClash.",
   "importConfigReplaceTip": "Al importar se reemplazan los grupos de proxies, las reglas y los ajustes que tiene ahora este perfil",
   "networkName": "Nombre de la red",
   "networkSecret": "Clave de la red",

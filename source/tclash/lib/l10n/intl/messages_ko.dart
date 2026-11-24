@@ -1758,6 +1758,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "tapIconToRetry": MessageLookupByLibrary.simpleMessage("아이콘을 눌러 다시 시도"),
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("눌러서 허용"),
     "target": MessageLookupByLibrary.simpleMessage("대상"),
+    "tclashProfileInvalid": MessageLookupByLibrary.simpleMessage(
+      "TClash에서 내보낸 유효한 .tclash 구성 파일을 선택하세요.",
+    ),
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("TCP 동시 연결"),
     "testInterval": MessageLookupByLibrary.simpleMessage("테스트 간격"),
     "testUrl": MessageLookupByLibrary.simpleMessage("테스트 URL"),

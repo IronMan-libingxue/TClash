@@ -4,6 +4,7 @@
 | --- | --- |
 | `2.5.11-Windows` | 2.5.11 Windows 交付用的 Inno Setup 输入，安装器版本为 2.5.11 |
 | `2.5.12-Windows` | 2.5.12 Windows 交付用的 Inno Setup 输入，安装器版本为 2.5.12 |
+| `2.5.13-Windows` | 2.5.13 Windows 交付用的 Inno Setup 输入 |
 | `Windows插件覆盖` | 本机交叉构建使用的 app_links 7.2.2 和 connectivity_plus 7.2.0 的 Windows 原生源码覆盖，附上游许可证 |
 | `Windows交叉编译参数.txt` | 上次 macOS 主机交叉编译的参数记录，本机路径用占位符表示 |
 

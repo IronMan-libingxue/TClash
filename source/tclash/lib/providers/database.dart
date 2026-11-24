@@ -202,6 +202,19 @@ class Profiles extends _$Profiles {
 
   /// A new provider label follows into custom profiles whatever path set it.
   void put(Profile profile) {
+    unawaited(_put(profile).catchError(_reportOptimisticFailure));
+  }
+
+  Future<void> putPackage(Profile profile, Script? script) {
+    return _put(
+      profile,
+      beforeWrite: script == null
+          ? null
+          : () => database.scripts.put(script.toCompanion()),
+    );
+  }
+
+  Future<void> _put(Profile profile, {Future<void> Function()? beforeWrite}) {
     final newProfile = labeled(profile);
     final previous = state.getProfile(profile.id);
     final previousLabel = previous?.realLabel;
@@ -216,8 +229,19 @@ class Profiles extends _$Profiles {
     if (newProfile.type == ProfileType.custom ||
         previousLabel == null ||
         previousLabel == newProfile.realLabel) {
-      _optimistic(next, () => _serial(() => _putLatest([newProfile.id])));
-      return;
+      return _optimisticAsync(
+        next,
+        () => _serial(() async {
+          if (beforeWrite == null) {
+            await _putLatest([newProfile.id]);
+            return;
+          }
+          await database.transaction(() async {
+            await beforeWrite();
+            await _putLatest([newProfile.id]);
+          });
+        }),
+      );
     }
     final names = {previousLabel: newProfile.realLabel};
     final users = [
@@ -232,10 +256,11 @@ class Profiles extends _$Profiles {
     for (final user in users) {
       next = next.copyAndPut(user, (item) => item.id == user.id);
     }
-    _optimistic(
+    return _optimisticAsync(
       next,
       () => _serial(
         () => database.transaction(() async {
+          await beforeWrite?.call();
           await database.proxyGroupsDao.renameUse(
             await database.profilesDao.customIds().get(),
             oldName: previousLabel,

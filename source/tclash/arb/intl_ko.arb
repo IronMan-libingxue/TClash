@@ -844,6 +844,7 @@
   "failedItem": "{label}: {message}",
   "failedCount": "{count}개 항목 실패. 눌러서 보기",
   "importConfigInvalid": "가져올 수 있는 구성 파일이 아닙니다",
+  "tclashProfileInvalid": "TClash에서 내보낸 유효한 .tclash 구성 파일을 선택하세요.",
   "importConfigReplaceTip": "가져오면 이 프로필의 현재 프록시 그룹, 규칙, 설정이 대체됩니다",
   "networkName": "네트워크 이름",
   "networkSecret": "네트워크 시크릿",

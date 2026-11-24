@@ -2204,6 +2204,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Нажмите, чтобы разрешить",
     ),
     "target": MessageLookupByLibrary.simpleMessage("Цель"),
+    "tclashProfileInvalid": MessageLookupByLibrary.simpleMessage(
+      "Выберите действительный файл конфигурации .tclash, экспортированный из TClash.",
+    ),
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("Параллельный TCP"),
     "testInterval": MessageLookupByLibrary.simpleMessage(
       "Интервал тестирования",

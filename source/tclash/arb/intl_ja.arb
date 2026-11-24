@@ -844,6 +844,7 @@
   "failedItem": "{label}：{message}",
   "failedCount": "{count} 件が失敗しました。タップして表示",
   "importConfigInvalid": "このファイルはインポートできる設定ではありません",
+  "tclashProfileInvalid": "TClash からエクスポートした有効な .tclash 設定ファイルを選択してください。",
   "importConfigReplaceTip": "インポートすると、このプロファイルの現在のプロキシグループ、ルール、設定が置き換えられます",
   "networkName": "ネットワーク名",
   "networkSecret": "ネットワークシークレット",

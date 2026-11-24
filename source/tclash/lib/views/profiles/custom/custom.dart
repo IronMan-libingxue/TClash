@@ -157,11 +157,17 @@ class _CustomProfileViewState extends ConsumerState<CustomProfileView> {
   }
 
   Future<void> _handleImportFromFile() async {
-    final file = await globalState.safeRun(picker.pickerFile);
+    final file = await globalState.safeRun(picker.pickTClashProfile);
     if (file == null || !mounted) {
       return;
     }
-    await _import(file.readBytes);
+    await _import(() async {
+      final package = await _profilesAction.readLocalPackage(
+        file.name,
+        file.readAsByteStream,
+      );
+      return _profilesAction.localPackageConfig(package);
+    });
   }
 
   Future<void> _import(Future<Uint8List> Function() readBytes) async {

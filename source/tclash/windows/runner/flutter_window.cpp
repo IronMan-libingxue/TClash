@@ -1,10 +1,14 @@
 #include "flutter_window.h"
 
+#include <shellapi.h>
 #include <optional>
 
+#include <flutter/method_channel.h>
+#include <flutter/standard_method_codec.h>
 #include <window/window_plugin_runner.h>
 
 #include "flutter/generated_plugin_registrant.h"
+#include "utils.h"
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -28,6 +32,7 @@ bool FlutterWindow::OnCreate() {
   }
   RegisterPlugins(flutter_controller_->engine());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
+  DragAcceptFiles(GetHandle(), TRUE);
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
 
@@ -42,6 +47,7 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  DragAcceptFiles(GetHandle(), FALSE);
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }
@@ -53,6 +59,29 @@ LRESULT
 FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               WPARAM const wparam,
                               LPARAM const lparam) noexcept {
+  if (message == WM_DROPFILES) {
+    auto drop = reinterpret_cast<HDROP>(wparam);
+    flutter::EncodableList paths;
+    const UINT count = DragQueryFileW(drop, 0xFFFFFFFF, nullptr, 0);
+    for (UINT index = 0; index < count; ++index) {
+      const UINT length = DragQueryFileW(drop, index, nullptr, 0);
+      std::wstring path(length + 1, L'\0');
+      if (DragQueryFileW(drop, index, path.data(), length + 1) != 0) {
+        paths.emplace_back(Utf8FromUtf16(path.data()));
+      }
+    }
+    DragFinish(drop);
+    if (flutter_controller_ && !paths.empty()) {
+      flutter::MethodChannel<flutter::EncodableValue> channel(
+          flutter_controller_->engine()->messenger(), "tclash/profile_files",
+          &flutter::StandardMethodCodec::GetInstance());
+      channel.InvokeMethod(
+          "profilesDropped",
+          std::make_unique<flutter::EncodableValue>(std::move(paths)));
+    }
+    return 0;
+  }
+
   // Give Flutter, including plugins, an opportunity to handle window messages.
   if (flutter_controller_) {
     WindowPluginForwardVisibility(*flutter_controller_, message, wparam,

@@ -1616,6 +1616,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "tapIconToRetry": MessageLookupByLibrary.simpleMessage("点击图标重试"),
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("点击授权"),
     "target": MessageLookupByLibrary.simpleMessage("目标"),
+    "tclashProfileInvalid": MessageLookupByLibrary.simpleMessage(
+      "请选择从 TClash 导出的有效 .tclash 配置文件。",
+    ),
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("TCP并发"),
     "testInterval": MessageLookupByLibrary.simpleMessage("测试间隔"),
     "testUrl": MessageLookupByLibrary.simpleMessage("测速链接"),

@@ -38,24 +38,30 @@ func run() error {
 		return nil
 	}
 	migrationDir := ""
+	legacySource := ""
 	controllerHere := false
 	if *dataDir == "" {
 		root, err := os.UserConfigDir()
 		if err != nil {
 			return err
 		}
-		*dataDir = filepath.Join(root, "TClash Preview", "collector")
+		legacySource = filepath.Join(root, "TClash Preview", "collector")
+		*dataDir = usagetracker.DesktopCollectorDir(root)
 		controllerHere, err = controllerOnThisUser(root)
 		if err != nil {
 			return err
 		}
-		if !controllerHere {
-			selected, migrate, err := selectCollectorDir(root, *dataDir)
+		_, existing := os.Stat(filepath.Join(*dataDir, "tracker.json"))
+		if existing != nil && !errors.Is(existing, fs.ErrNotExist) {
+			return existing
+		}
+		if !controllerHere && (existing != nil || *verifyMigration) {
+			selected, migrate, err := selectCollectorDir(root, legacySource)
 			if err != nil {
 				return err
 			}
 			if migrate {
-				migrationDir, *dataDir = *dataDir, selected
+				migrationDir, legacySource = legacySource, selected
 			}
 		}
 	}
@@ -79,6 +85,11 @@ func run() error {
 	}
 	if !held {
 		return errors.New("collector data directory is already in use")
+	}
+	if legacySource != "" {
+		if err := usagetracker.MigrateDesktopCollector(legacySource, *dataDir); err != nil {
+			return err
+		}
 	}
 	tracker, err := usagetracker.New(*dataDir, "")
 	if err != nil {
@@ -105,6 +116,9 @@ func run() error {
 		}
 	}
 	if err := usagetracker.UseLocalCodex(*dataDir); err != nil {
+		return err
+	}
+	if err := tracker.EnableLocalHistory(); err != nil {
 		return err
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

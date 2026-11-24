@@ -6998,6 +6998,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Select a valid .tclash profile exported from TClash.`
+  String get tclashProfileInvalid {
+    return Intl.message(
+      'Select a valid .tclash profile exported from TClash.',
+      name: 'tclashProfileInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Importing replaces the proxy groups, rules and settings this profile has now`
   String get importConfigReplaceTip {
     return Intl.message(

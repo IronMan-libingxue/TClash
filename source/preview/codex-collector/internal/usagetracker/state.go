@@ -59,7 +59,9 @@ type config struct {
 }
 
 type App struct {
-	dir string
+	dir                 string
+	localHistoryEnabled bool
+	localHistoryDigest  [32]byte
 
 	mu                sync.RWMutex
 	cfg               config
@@ -330,6 +332,10 @@ func (a *App) refreshLocal(ctx context.Context, cfg config) error {
 		defer a.pricingJob.Unlock()
 	}
 	a.mu.Lock()
+	defer a.mu.Unlock()
+	if cfg.Role == "b" && a.localHistoryEnabled {
+		days = mergeLocalHistory(cfg, a.local, days, time.Now())
+	}
 	if cfg.Role == "a" {
 		priceRequests(days, a.pricing, false)
 	} else if a.pricing.published > 0 {
@@ -341,9 +347,13 @@ func (a *App) refreshLocal(ctx context.Context, cfg config) error {
 			}
 		}
 	}
+	if cfg.Role == "b" && a.localHistoryEnabled {
+		if err := a.saveLocalHistory(days); err != nil {
+			return err
+		}
+	}
 	a.local, a.readAt = days, time.Now()
 	a.localAccount = after
-	a.mu.Unlock()
 	return nil
 }
 

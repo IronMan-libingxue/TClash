@@ -157,6 +157,18 @@ class Bootstrap {
   ProviderContainer get _container => globalState.container;
 
   Future<void> _initApp() async {
+    if (system.isMacOS || system.isWindows) {
+      const MethodChannel('tclash/profile_files').setMethodCallHandler((
+        call,
+      ) async {
+        if (call.method != 'profilesDropped') return;
+        final paths = call.arguments;
+        if (paths is! List) return;
+        await _container
+            .read(profilesActionProvider.notifier)
+            .importDroppedProfiles(paths.whereType<String>().toList());
+      });
+    }
     unawaited(_container.read(systemActionProvider.notifier).updateTray());
     unawaited(
       _container.read(profilesActionProvider.notifier).autoUpdateProfiles(),

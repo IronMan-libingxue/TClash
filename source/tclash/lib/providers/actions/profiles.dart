@@ -144,8 +144,21 @@ class ProfilesAction extends _$ProfilesAction {
         : null;
     try {
       ref.read(profilesProvider.notifier).put(profile);
+      final script = profile.extendType == ExtendType.script
+          ? await (await database.scriptsDao
+                    .get(profile.scriptId ?? 0)
+                    .getSingleOrNull())
+                ?.content
+          : null;
       final updated = await profile.update(
-        validate: (path, key) => _core.validateProfile(path, key),
+        validate: (path, key) async {
+          if (!TClashProfilePackage.isLegacyScript(script)) {
+            return _core.validateProfile(path, key);
+          }
+          final bytes = await File(path).readAsBytes();
+          await _checkedPackageConfig(bytes, script);
+          return null;
+        },
       );
       // The download can take minutes; edits and deletes made meanwhile win.
       final latest = ref.read(profilesProvider).getProfile(profile.id);
@@ -186,25 +199,134 @@ class ProfilesAction extends _$ProfilesAction {
   }
 
   Future<void> addProfileFormFile() async {
-    final platformFile = await globalState.safeRun(picker.pickerFile);
+    final platformFile = await globalState.safeRun(picker.pickTClashProfile);
     if (platformFile == null) return;
-    final bytes = await platformFile.readBytes();
-    globalState.navigatorKey.currentState?.popUntil((route) => route.isFirst);
-    ref.read(currentPageLabelProvider.notifier).toProfiles();
+    await _addLocalPackage(
+      () => readLocalPackage(platformFile.name, platformFile.readAsByteStream),
+    );
+  }
+
+  Future<void> importDroppedProfiles(List<String> paths) async {
+    for (final path in paths) {
+      await _addLocalPackage(() async {
+        try {
+          return await TClashProfilePackage.readPath(path);
+        } catch (_) {
+          throw MessageException(currentAppLocalizations.tclashProfileInvalid);
+        }
+      });
+    }
+  }
+
+  Future<TClashProfilePackage> readLocalPackage(
+    String name,
+    Stream<List<int>> Function() read,
+  ) async {
+    try {
+      return await TClashProfilePackage.read(name, read);
+    } catch (_) {
+      throw MessageException(currentAppLocalizations.tclashProfileInvalid);
+    }
+  }
+
+  Future<void> _addLocalPackage(
+    Future<TClashProfilePackage> Function() read,
+  ) async {
     final profile = await globalState.loadingRun(
       tag: LoadingTag.profiles,
-      () => _withAgeSecretKey(
-        Profile.normal(label: platformFile.name),
-        (profile) => profile.saveFile(
-          bytes,
-          validate: (path, key) => _core.validateProfile(path, key),
-        ),
-      ),
+      () async {
+        final package = await read();
+        final profile = Profile.normal(label: package.name, url: package.url);
+        return saveLocalPackage(
+          profile.copyWith(
+            autoUpdate: package.autoUpdate,
+            autoUpdateDuration:
+                package.updateInterval ?? profile.autoUpdateDuration,
+          ),
+          package,
+        );
+      },
       title: currentAppLocalizations.addProfile,
     );
-    if (profile != null) {
-      putProfile(profile);
+    if (profile == null) return;
+    globalState.navigatorKey.currentState?.popUntil((route) => route.isFirst);
+    ref.read(currentPageLabelProvider.notifier).toProfiles();
+  }
+
+  Future<Uint8List> localPackageConfig(TClashProfilePackage package) =>
+      _checkedPackageConfig(package.config, package.script);
+
+  Future<Uint8List> _checkedPackageConfig(
+    List<int> bytes,
+    String? script,
+  ) async {
+    try {
+      final Uint8List validated;
+      if (script == null) {
+        validated = bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
+      } else {
+        final config = await compute(
+          TClashProfilePackage.configBytesMap,
+          bytes,
+        );
+        final effective = await encodeYamlTask(
+          await handleEvaluate(script, config),
+        );
+        validated = Uint8List.fromList(utf8.encode(effective));
+      }
+      if (await _core.validateConfigWithData(validated) == null) {
+        return validated;
+      }
+    } catch (_) {
+      // The parser can include source text in errors. Profile files can hold
+      // private subscription addresses or credentials.
     }
+    throw MessageException(currentAppLocalizations.tclashProfileInvalid);
+  }
+
+  Future<Profile> saveLocalPackage(
+    Profile profile,
+    TClashProfilePackage package, {
+    Uint8List? edited,
+  }) async {
+    final bytes = edited ?? package.config;
+    await _checkedPackageConfig(bytes, package.script);
+    final script = package.script == null
+        ? null
+        : Script.create(label: package.name);
+    final destination = File(
+      await appPath.getProfilePath(profile.id.toString()),
+    );
+    final previous = await destination.exists()
+        ? await destination.readAsString()
+        : null;
+    final updated = profile.copyWith(
+      lastUpdateDate: DateTime.now(),
+      extendType: script == null ? ExtendType.standard : ExtendType.script,
+      scriptId: script?.id,
+    );
+    try {
+      if (script != null) await script.save(package.script!);
+      await destination.writeAsStringAtomically(utf8.decode(bytes));
+      await ref.read(profilesProvider.notifier).putPackage(updated, script);
+    } catch (_) {
+      if (previous == null) {
+        await destination.safeDelete();
+      } else {
+        await destination.writeAsStringAtomically(previous);
+      }
+      if (script != null) await File(await script.path).safeDelete();
+      rethrow;
+    }
+    final current = ref.read(currentProfileIdProvider);
+    if (current == null) {
+      ref.read(currentProfileIdProvider.notifier).value = updated.id;
+    } else if (current == updated.id) {
+      ref
+          .read(setupActionProvider.notifier)
+          .applyProfileDebounce(silence: true);
+    }
+    return updated;
   }
 
   int addCustomProfile(String label) {

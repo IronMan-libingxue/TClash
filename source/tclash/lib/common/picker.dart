@@ -11,6 +11,14 @@ class Picker {
     return FilePicker.pickFile(initialDirectory: await appPath.downloadDirPath);
   }
 
+  Future<PlatformFile?> pickTClashProfile() async {
+    return FilePicker.pickFile(
+      initialDirectory: await appPath.downloadDirPath,
+      type: FileType.custom,
+      allowedExtensions: ['tclash'],
+    );
+  }
+
   Future<Uri?> saveFile(String fileName, Uint8List bytes) async {
     final uri = await FilePicker.saveFile(
       fileName: fileName,

@@ -844,6 +844,7 @@
   "failedItem": "{label}: {message}",
   "failedCount": "Ошибок: {count}. Нажмите, чтобы посмотреть",
   "importConfigInvalid": "Этот файл не является конфигурацией, которую можно импортировать",
+  "tclashProfileInvalid": "Выберите действительный файл конфигурации .tclash, экспортированный из TClash.",
   "importConfigReplaceTip": "Импорт заменит текущие группы прокси, правила и настройки этого профиля",
   "networkName": "Имя сети",
   "networkSecret": "Секрет сети",

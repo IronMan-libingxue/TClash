@@ -2262,6 +2262,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Toca para autorizar",
     ),
     "target": MessageLookupByLibrary.simpleMessage("Destino"),
+    "tclashProfileInvalid": MessageLookupByLibrary.simpleMessage(
+      "Selecciona un archivo de configuración .tclash válido exportado por TClash.",
+    ),
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("TCP concurrente"),
     "testInterval": MessageLookupByLibrary.simpleMessage("Intervalo de prueba"),
     "testUrl": MessageLookupByLibrary.simpleMessage("URL de prueba"),

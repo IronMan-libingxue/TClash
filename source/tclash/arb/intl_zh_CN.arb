@@ -844,6 +844,7 @@
   "failedItem": "{label}：{message}",
   "failedCount": "{count} 项失败，点击查看",
   "importConfigInvalid": "此文件不是可导入的配置",
+  "tclashProfileInvalid": "请选择从 TClash 导出的有效 .tclash 配置文件。",
   "importConfigReplaceTip": "导入会替换此配置现有的策略组、规则和设置",
   "networkName": "网络名称",
   "networkSecret": "网络密码",

@@ -4,7 +4,10 @@ import 'dart:typed_data';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/state.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../helpers/app_paths.dart';
 
@@ -77,5 +80,46 @@ void main() {
 
       expect(ageSecretKey, 'AGE-SECRET-KEY-1A');
     });
+
+    test(
+      'an existing subscription still downloads and saves plain YAML',
+      () async {
+        final overrides = HttpOverrides.current;
+        HttpOverrides.global = null;
+        addTearDown(() => HttpOverrides.global = overrides);
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+        globalState.container = container;
+        globalState.packageInfo = PackageInfo(
+          appName: 'TClash',
+          packageName: 'local.tclash.test',
+          version: '2.5.13',
+          buildNumber: '1',
+        );
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        addTearDown(() => server.close(force: true));
+        var response = 'proxies: []\nrules: ["MATCH,DIRECT"]\n';
+        server.listen((request) async {
+          request.response.write(response);
+          await request.response.close();
+        });
+        final profile = Profile.normal(
+          label: 'Existing subscription',
+          url: 'http://127.0.0.1:${server.port}/profile',
+        );
+        Future<String?> validate(String path, String key) async {
+          expect(await File(path).readAsString(), response);
+          return null;
+        }
+
+        final imported = await profile.update(validate: validate);
+        expect(imported.url, profile.url);
+        expect(await (await imported.file).readAsString(), response);
+        response = 'proxies: []\nrules: ["MATCH,REJECT"]\n';
+        final updated = await imported.update(validate: validate);
+        expect(updated.id, imported.id);
+        expect(await (await updated.file).readAsString(), response);
+      },
+    );
   });
 }
